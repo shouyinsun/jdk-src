@@ -46,6 +46,20 @@ import sun.misc.DoubleConsts;
  * @author  Joseph D. Darcy
  * @since JDK1.0
  */
+
+/***
+ * Double遵循此标准中的64位浮点数表示方式。从左到右具体为：
+
+ 1.第一位为符号部,0表示正,1表示负
+
+ 2.2~12位为指数部,用以存放具体数值的指数
+
+ 3.13~64位为尾数部,
+
+ 其中指数部为11位,可以表示2048个数,为-1023~+1024,因为存在正负号,会导致运算比较困难,故标准中设置了一个偏移值,
+ 将指数加上偏移值后得到编码值存储在指数部中,利于计算和比较。其中偏移值为2^（x-1）-1,x为指数部的位数,此处为11,故偏移值为1023
+ * 
+ * ***/
 public final class Double extends Number implements Comparable<Double> {
     /**
      * A constant holding the positive infinity of type
@@ -104,7 +118,7 @@ public final class Double extends Number implements Comparable<Double> {
      *
      * @since 1.6
      */
-    public static final int MAX_EXPONENT = 1023;
+    public static final int MAX_EXPONENT = 1023;//指数部最大值为2^1023
 
     /**
      * Minimum exponent a normalized {@code double} variable may
@@ -113,7 +127,7 @@ public final class Double extends Number implements Comparable<Double> {
      *
      * @since 1.6
      */
-    public static final int MIN_EXPONENT = -1022;
+    public static final int MIN_EXPONENT = -1022;//指数部最小值为2^-1022
 
     /**
      * The number of bits used to represent a {@code double} value.

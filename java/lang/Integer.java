@@ -777,7 +777,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * sun.misc.VM class.
      */
 
-    private static class IntegerCache {
+    private static class IntegerCache {//数据缓存 默认 -128 to 127
         static final int low = -128;
         static final int high;
         static final Integer cache[];
@@ -826,7 +826,18 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @return an {@code Integer} instance representing {@code i}.
      * @since  1.5
      */
-    public static Integer valueOf(int i) {
+
+    /***
+     * Integer e = 100
+     * 会自动装箱,使用valueOf方法,-128<= i <=127   会使用缓存
+     *
+     * Integer i = 100;
+       i = null;//不会有对象符合垃圾回收器的条件
+       这里i虽然置为null,但它之前指向的是cache中的Integer对象,而cache没有被赋null,所以Integer(100)这个对象还是存在
+     *
+     *
+     * ***/
+    public static Integer valueOf(int i) {//valueOf方法会使用缓存
         if (i >= IntegerCache.low && i <= IntegerCache.high)
             return IntegerCache.cache[i + (-IntegerCache.low)];
         return new Integer(i);
@@ -1392,7 +1403,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     is equal to zero.
      * @since 1.5
      */
-    public static int numberOfLeadingZeros(int i) {
+    public static int numberOfLeadingZeros(int i) {//在指定 int 值的二进制补码表示形式中最高位（最左边）的 1 位之前，返回零位的数量
         // HD, Figure 5-6
         if (i == 0)
             return 32;
