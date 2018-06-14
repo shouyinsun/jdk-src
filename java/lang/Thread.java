@@ -138,7 +138,7 @@ import sun.security.util.SecurityConstants;
  * @since   JDK1.0
  */
 public
-class Thread implements Runnable {
+class Thread implements Runnable {//Thread 也是 实现Runnable接口
     /* Make sure registerNatives is the first thing <clinit> does. */
     private static native void registerNatives();
     static {
@@ -179,12 +179,14 @@ class Thread implements Runnable {
 
     /* ThreadLocal values pertaining to this thread. This map is maintained
      * by the ThreadLocal class. */
+    //有关该线程的ThreadLocal 值
     ThreadLocal.ThreadLocalMap threadLocals = null;
 
     /*
      * InheritableThreadLocal values pertaining to this thread. This map is
      * maintained by the InheritableThreadLocal class.
      */
+    //继承的ThreadLocal
     ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
 
     /*
@@ -210,7 +212,7 @@ class Thread implements Runnable {
     /* Java thread status for tools,
      * initialized to indicate thread 'not yet started'
      */
-
+    //线程状态 初始0表示 还未启动
     private volatile int threadStatus = 0;
 
 
@@ -233,7 +235,7 @@ class Thread implements Runnable {
     private volatile Interruptible blocker;
     private final Object blockerLock = new Object();
 
-    /* Set the blocker field; invoked via sun.misc.SharedSecrets from java.nio code
+        /* Set the blocker field; invoked via sun.misc.SharedSecrets from java.nio code
      */
     void blockedOn(Interruptible b) {
         synchronized (blockerLock) {
@@ -279,6 +281,9 @@ class Thread implements Runnable {
      * concurrency control constructs such as the ones in the
      * {@link java.util.concurrent.locks} package.
      */
+    //暂停当前正在执行的线程,回到 可执行状态  允许具有 相同优先级 的其他线程获得运行机会
+    //实际中无法保证yield()达到让步目的,因为让步的线程还有可能被线程调度程序再次选中
+    //yield()从未导致线程转到等待/睡眠/阻塞状态
     public static native void yield();
 
     /**
@@ -298,6 +303,7 @@ class Thread implements Runnable {
      *          <i>interrupted status</i> of the current thread is
      *          cleared when this exception is thrown.
      */
+    //当前线程并不会释放锁
     public static native void sleep(long millis) throws InterruptedException;
 
     /**
@@ -429,6 +435,7 @@ class Thread implements Runnable {
      * @throws  CloneNotSupportedException
      *          always
      */
+    //thread 不支持clone,new 一个
     @Override
     protected Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -741,6 +748,7 @@ class Thread implements Runnable {
      */
     @Override
     public void run() {
+        //target !=null,传入的是一个runnable
         if (target != null) {
             target.run();
         }
@@ -1231,6 +1239,7 @@ class Thread implements Runnable {
      *          <i>interrupted status</i> of the current thread is
      *          cleared when this exception is thrown.
      */
+    //while (isAlive()) 循环加 wait()
     public final synchronized void join(long millis)
     throws InterruptedException {
         long base = System.currentTimeMillis();
@@ -1348,7 +1357,7 @@ class Thread implements Runnable {
      */
     public final void setDaemon(boolean on) {
         checkAccess();
-        if (isAlive()) {
+        if (isAlive()) {//设置为守护线程需要在start之前
             throw new IllegalThreadStateException();
         }
         daemon = on;
@@ -1732,7 +1741,7 @@ class Thread implements Runnable {
      * @since   1.5
      * @see #getState
      */
-    public enum State {
+    public enum State {//线程状态： 新建、可运行(调用start)、阻塞、等待、定时等待、终止
         /**
          * Thread state for a thread which has not yet started.
          */
@@ -1753,6 +1762,7 @@ class Thread implements Runnable {
          * reenter a synchronized block/method after calling
          * {@link Object#wait() Object.wait}.
          */
+        //阻塞 获取锁
         BLOCKED,
 
         /**
@@ -1774,7 +1784,17 @@ class Thread implements Runnable {
          * that object. A thread that has called <tt>Thread.join()</tt>
          * is waiting for a specified thread to terminate.
          */
+
+
+        /**
+         *三种情况：
+         * Object.wait
+         * Thread.join
+         * LockSupport.park
+         * **/
         WAITING,
+
+
 
         /**
          * Thread state for a waiting thread with a specified waiting time.
@@ -1788,6 +1808,13 @@ class Thread implements Runnable {
          *   <li>{@link LockSupport#parkUntil LockSupport.parkUntil}</li>
          * </ul>
          */
+
+        /***
+         * Thread.sleep
+         * Object.wait +超时时间
+         * Thread.join +超时时间
+         * LockSupport.park +超时时间
+         * **/
         TIMED_WAITING,
 
         /**
