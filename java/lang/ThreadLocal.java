@@ -271,6 +271,7 @@ public class ThreadLocal<T> {
      * An extension of ThreadLocal that obtains its initial value from
      * the specified {@code Supplier}.
      */
+    //补充 ThreadLocal
     static final class SuppliedThreadLocal<T> extends ThreadLocal<T> {
 
         private final Supplier<? extends T> supplier;
@@ -295,6 +296,7 @@ public class ThreadLocal<T> {
      * used, stale entries are guaranteed to be removed only when
      * the table starts running out of space.
      */
+    //弱引用的key
     static class ThreadLocalMap {
 
         /**
@@ -339,6 +341,7 @@ public class ThreadLocal<T> {
         /**
          * Set the resize threshold to maintain at worst a 2/3 load factor.
          */
+        //resize 阀值  2/3的len
         private void setThreshold(int len) {
             threshold = len * 2 / 3;
         }
