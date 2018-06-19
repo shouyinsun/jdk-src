@@ -52,6 +52,49 @@ import java.io.ObjectStreamException;
  * @see     java.util.EnumMap
  * @since   1.5
  */
+//Enum类无法被继承
+/**
+ * enum关键字是java提供的一个语法糖
+ * 编译器不让我们继承Enum,但是当我们使用enum关键字定义一个枚举的时候
+ * jdk编译期自动编译 帮我们在编译后默认继承java.lang.Enum类,而不像其他的类一样默认继承Object类
+ *
+ * enum声明后,该类会被编译器加上final声明,故该类是无法继承的
+ * classloader的机制保证初始化instance时只有一个线程,所以也是线程安全的,同时没有性能损耗
+ * PS：由于JVM类初始化是线程安全的,所以可以采用枚举类实现一个线程安全的单例模式:
+ *
+ * //类Resource是要应用单例模式的资源,SomeThing.INSTANCE.getInstance() 即可获得所要实例
+ *
+ * 枚举中明确了构造方法限制为私有,同时每个枚举实例都是static final类型的
+ * 也就表明只能被实例化一次。在调用构造方法时,单例被实例化
+ *
+ class Resource{
+
+ }
+ public enum SomeThing {
+     INSTANCE;
+     private Resource instance;
+     SomeThing() {
+        instance = new Resource();
+     }
+     public Resource getInstance() {
+        return instance;
+     }
+ }
+
+
+ //静态内部类实现单例
+ public class Singleton {
+     private Singleton(){
+     }
+     private static class SingletonHolder{
+        private final static Singleton instance=new Singleton();
+     }
+     public static Singleton getInstance(){
+        return SingletonHolder.instance;
+     }
+ }
+
+ * **/
 public abstract class Enum<E extends Enum<E>>
         implements Comparable<E>, Serializable {
     /**
@@ -114,7 +157,7 @@ public abstract class Enum<E extends Enum<E>>
      *         in the enum declaration, where the initial constant is assigned
      *         an ordinal of zero).
      */
-    protected Enum(String name, int ordinal) {
+    protected Enum(String name, int ordinal) {//protected 的构造函数,不能被外部调用
         this.name = name;
         this.ordinal = ordinal;
     }
@@ -246,6 +289,7 @@ public abstract class Enum<E extends Enum<E>>
     /**
      * prevent default deserialization
      */
+    //不支持默认的序列化/反序列化
     private void readObject(ObjectInputStream in) throws IOException,
         ClassNotFoundException {
         throw new InvalidObjectException("can't deserialize enum");
