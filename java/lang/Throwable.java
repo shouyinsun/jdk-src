@@ -28,6 +28,7 @@ import  java.io.*;
 import  java.util.*;
 
 /**
+ * Throwable是 Exception 和 Error 的父类
  * The {@code Throwable} class is the superclass of all errors and
  * exceptions in the Java language. Only objects that are instances of this
  * class (or one of its subclasses) are thrown by the Java Virtual Machine or
@@ -39,6 +40,8 @@ import  java.util.*;
  * Throwable} and any subclass of {@code Throwable} that is not also a
  * subclass of either {@link RuntimeException} or {@link Error} are
  * regarded as checked exceptions.
+ *
+ * RuntimeException 与 Error 不会进行编译时的检查
  *
  * <p>Instances of two subclasses, {@link java.lang.Error} and
  * {@link java.lang.Exception}, are conventionally used to indicate
@@ -139,7 +142,7 @@ public class Throwable implements Serializable {
          * {@linkplain #setStackTrace(StackTraceElement[]) Setting the
          * stack trace} to a one-element array containing this sentinel
          * value indicates future attempts to set the stack trace will be
-         * ignored.  The sentinal is equal to the result of calling:<br>
+         * ignored.  The sentinel is equal to the result of calling:<br>
          * {@code new StackTraceElement("", "", null, Integer.MIN_VALUE)}
          */
         public static final StackTraceElement STACK_TRACE_ELEMENT_SENTINEL =
