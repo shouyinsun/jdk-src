@@ -490,6 +490,7 @@ public final class System {
      * @exception  NullPointerException if either <code>src</code> or
      *               <code>dest</code> is <code>null</code>.
      */
+    //数组copy
     public static native void arraycopy(Object src,  int  srcPos,
                                         Object dest, int destPos,
                                         int length);
@@ -967,6 +968,7 @@ public final class System {
      *        method doesn't allow exit with the specified status.
      * @see        java.lang.Runtime#exit(int)
      */
+    //exit 终止当前正在运行的 Java 虚拟机
     public static void exit(int status) {
         Runtime.getRuntime().exit(status);
     }
@@ -989,6 +991,7 @@ public final class System {
      *
      * @see     java.lang.Runtime#gc()
      */
+    //调用垃圾回收器
     public static void gc() {
         Runtime.getRuntime().gc();
     }

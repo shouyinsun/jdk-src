@@ -197,6 +197,7 @@ public class Throwable implements Serializable {
      * @serial
      * @since 1.4
      */
+    //初始化异常原因为本身
     private Throwable cause = this;
 
     /**
@@ -414,6 +415,7 @@ public class Throwable implements Serializable {
      *          cause is nonexistent or unknown.
      * @since 1.4
      */
+    //若cause为本身 即初始化时没有赋值 返回null 若已赋值 则返回值
     public synchronized Throwable getCause() {
         return (cause==this ? null : cause);
     }
@@ -455,7 +457,7 @@ public class Throwable implements Serializable {
      * @since  1.4
      */
     public synchronized Throwable initCause(Throwable cause) {
-        if (this.cause != this)
+        if (this.cause != this)//已设置过cause 则抛异常 意思为只能设置一次
             throw new IllegalStateException("Can't overwrite cause with " +
                                             Objects.toString(cause, "a null"), this);
         if (cause == this)

@@ -438,7 +438,7 @@ public final class Class<T> implements java.io.Serializable,
             }
         }
         // Run constructor
-        try {
+        try {//通过构造函数实例对象
             return tmpConstructor.newInstance((Object[])null);
         } catch (InvocationTargetException e) {
             Unsafe.getUnsafe().throwException(e.getTargetException());
@@ -709,7 +709,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @SuppressWarnings("unchecked")
-    public TypeVariable<Class<T>>[] getTypeParameters() {
+    public TypeVariable<Class<T>>[] getTypeParameters() {//返回该类中声明(定义)的类变量数组 如 public class Test<K, V>
         ClassRepository info = getGenericInfo();
         if (info != null)
             return (TypeVariable<Class<T>>[])info.getTypeParameters();
@@ -761,7 +761,7 @@ public final class Class<T> implements java.io.Serializable,
      * @return the superclass of the class represented by this object
      * @since 1.5
      */
-    public Type getGenericSuperclass() {
+    public Type getGenericSuperclass() {//直接父类的类型,如果是泛型再获得其类型原型
         ClassRepository info = getGenericInfo();
         if (info == null) {
             return getSuperclass();
@@ -1011,7 +1011,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @CallerSensitive
-    public Method getEnclosingMethod() throws SecurityException {
+    public Method getEnclosingMethod() throws SecurityException {//该Class对象位于一个方法内,返回包含这个类的方法的信息(Method对象)
         EnclosingMethodInfo enclosingInfo = getEnclosingMethodInfo();
 
         if (enclosingInfo == null)
@@ -1552,7 +1552,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field[] getFields() throws SecurityException {
+    public Field[] getFields() throws SecurityException {//公有字段
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyFields(privateGetPublicFields(null));
     }
@@ -1610,7 +1610,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Method[] getMethods() throws SecurityException {
+    public Method[] getMethods() throws SecurityException {//公有方法
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyMethods(privateGetPublicMethods());
     }
@@ -1646,7 +1646,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Constructor<?>[] getConstructors() throws SecurityException {
+    public Constructor<?>[] getConstructors() throws SecurityException {//公有构造器
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyConstructors(privateGetDeclaredConstructors(true));
     }
@@ -1911,7 +1911,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field[] getDeclaredFields() throws SecurityException {
+    public Field[] getDeclaredFields() throws SecurityException {//所有的字段,各种访问权限的
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyFields(privateGetDeclaredFields(false));
     }
@@ -3397,7 +3397,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @SuppressWarnings("unchecked")
-    public <U> Class<? extends U> asSubclass(Class<U> clazz) {
+    public <U> Class<? extends U> asSubclass(Class<U> clazz) {//将类转换为它的子类Class
         if (clazz.isAssignableFrom(this))
             return (Class<? extends U>) this;
         else
