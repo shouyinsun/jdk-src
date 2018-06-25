@@ -338,6 +338,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
          * previous.  Reset to -1 if this element is deleted by a call
          * to remove.
          */
+        //上一次next或者previous方法返回元素的索引
         int lastRet = -1;
 
         /**
@@ -360,12 +361,12 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
                 cursor = i + 1;
                 return next;
             } catch (IndexOutOfBoundsException e) {
-                checkForComodification();
+                checkForComodification();//数组越界,再判断并发修改
                 throw new NoSuchElementException();
             }
         }
 
-        public void remove() {
+        public void remove() {//iterator的remove方法
             if (lastRet < 0)
                 throw new IllegalStateException();
             checkForComodification();
@@ -375,12 +376,14 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
                 if (lastRet < cursor)
                     cursor--;
                 lastRet = -1;
+                //modCount赋值给expectedModCount,不会有并发修改异常
                 expectedModCount = modCount;
             } catch (IndexOutOfBoundsException e) {
                 throw new ConcurrentModificationException();
             }
         }
 
+        //modCount跟expectedModCount比较,判断并发修改
         final void checkForComodification() {
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
@@ -389,7 +392,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 
     private class ListItr extends Itr implements ListIterator<E> {
         ListItr(int index) {
-            cursor = index;
+            cursor = index;//游标设置成index值
         }
 
         public boolean hasPrevious() {
@@ -417,20 +420,20 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
             return cursor-1;
         }
 
-        public void set(E e) {
+        public void set(E e) {//listIterator的set方法
             if (lastRet < 0)
                 throw new IllegalStateException();
             checkForComodification();
 
             try {
                 AbstractList.this.set(lastRet, e);
-                expectedModCount = modCount;
+                expectedModCount = modCount;//不会并发修改异常
             } catch (IndexOutOfBoundsException ex) {
                 throw new ConcurrentModificationException();
             }
         }
 
-        public void add(E e) {
+        public void add(E e) {//listIterator的add方法
             checkForComodification();
 
             try {
@@ -438,7 +441,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
                 AbstractList.this.add(i, e);
                 lastRet = -1;
                 cursor = i + 1;
-                expectedModCount = modCount;
+                expectedModCount = modCount;//不会并发修改异常
             } catch (IndexOutOfBoundsException ex) {
                 throw new ConcurrentModificationException();
             }
@@ -610,7 +613,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 }
 
-class SubList<E> extends AbstractList<E> {
+class SubList<E> extends AbstractList<E> {//subList也继承AbstractList
     private final AbstractList<E> l;
     private final int offset;
     private int size;

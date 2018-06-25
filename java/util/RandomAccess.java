@@ -64,5 +64,6 @@ package java.util;
  *
  * @since 1.4
  */
+//random and sequential access 随机和顺序访问
 public interface RandomAccess {
 }
