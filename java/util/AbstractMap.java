@@ -343,7 +343,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * is performed, so there is a slight chance that multiple calls to this
      * method will not all return the same set.
      */
-    public Set<K> keySet() {
+    public Set<K> keySet() {//返回Set<K>
         Set<K> ks = keySet;
         if (ks == null) {
             ks = new AbstractSet<K>() {
@@ -402,7 +402,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * performed, so there is a slight chance that multiple calls to this
      * method will not all return the same collection.
      */
-    public Collection<V> values() {
+    public Collection<V> values() {//返回Collection<V>
         Collection<V> vals = values;
         if (vals == null) {
             vals = new AbstractCollection<V>() {
