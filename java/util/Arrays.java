@@ -3205,6 +3205,7 @@ public class Arrays {
      *     an array of class <tt>newType</tt>
      * @since 1.6
      */
+    //数组copy,截取或填充
     public static <T,U> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {
         @SuppressWarnings("unchecked")
         T[] copy = ((Object)newType == (Object)Object[].class)

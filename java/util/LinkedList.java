@@ -80,6 +80,9 @@ import java.util.function.Consumer;
  * @param <E> the type of elements held in this collection
  */
 
+/**
+ *双向链表结构
+ * **/
 public class LinkedList<E>
     extends AbstractSequentialList<E>
     implements List<E>, Deque<E>, Cloneable, java.io.Serializable
@@ -563,10 +566,10 @@ public class LinkedList<E>
     /**
      * Returns the (non-null) Node at the specified element index.
      */
-    Node<E> node(int index) {
+    Node<E> node(int index) {//链表获取index元素需要递归
         // assert isElementIndex(index);
 
-        if (index < (size >> 1)) {
+        if (index < (size >> 1)) {// 1/2比值,从前还是从后
             Node<E> x = first;
             for (int i = 0; i < index; i++)
                 x = x.next;
@@ -647,6 +650,12 @@ public class LinkedList<E>
      * @return the head of this list, or {@code null} if this list is empty
      * @since 1.5
      */
+    /*****
+     *
+     peek 偷看、瞥一眼
+     只查看,不删除
+     是空返回null
+     */
     public E peek() {
         final Node<E> f = first;
         return (f == null) ? null : f.item;
@@ -659,7 +668,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.5
      */
-    public E element() {
+    public E element() {//getFirst,为空 NoSuchElementException
         return getFirst();
     }
 
@@ -669,7 +678,7 @@ public class LinkedList<E>
      * @return the head of this list, or {@code null} if this list is empty
      * @since 1.5
      */
-    public E poll() {
+    public E poll() {//获取并删除first
         final Node<E> f = first;
         return (f == null) ? null : unlinkFirst(f);
     }
@@ -681,7 +690,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.5
      */
-    public E remove() {
+    public E remove() {//removeFirst 为空 NoSuchElementException
         return removeFirst();
     }
 
@@ -782,7 +791,7 @@ public class LinkedList<E>
      * @param e the element to push
      * @since 1.6
      */
-    public void push(E e) {
+    public void push(E e) {//push是在first
         addFirst(e);
     }
 
@@ -797,7 +806,7 @@ public class LinkedList<E>
      * @throws NoSuchElementException if this list is empty
      * @since 1.6
      */
-    public E pop() {
+    public E pop() {//pop是在first
         return removeFirst();
     }
 

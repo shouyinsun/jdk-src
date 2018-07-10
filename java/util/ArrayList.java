@@ -138,7 +138,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @serial
      */
-    private int size;
+    private int size;//包含元素个数
 
     /**
      * Constructs an empty list with the specified initial capacity.
@@ -190,7 +190,7 @@ public class ArrayList<E> extends AbstractList<E>
      * list's current size.  An application can use this operation to minimize
      * the storage of an <tt>ArrayList</tt> instance.
      */
-    public void trimToSize() {
+    public void trimToSize() {//将elementData中空余的空间（包括null值）去除
         modCount++;
         if (size < elementData.length) {
             elementData = (size == 0)
@@ -228,7 +228,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     private void ensureExplicitCapacity(int minCapacity) {
-        modCount++;
+        modCount++;//modCount 加1
 
         // overflow-conscious code
         if (minCapacity - elementData.length > 0)
@@ -249,10 +249,10 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @param minCapacity the desired minimum capacity
      */
-    private void grow(int minCapacity) {
+    private void grow(int minCapacity) {//容量增长
         // overflow-conscious code
         int oldCapacity = elementData.length;
-        int newCapacity = oldCapacity + (oldCapacity >> 1);
+        int newCapacity = oldCapacity + (oldCapacity >> 1);//1.5倍
         if (newCapacity - minCapacity < 0)
             newCapacity = minCapacity;
         if (newCapacity - MAX_ARRAY_SIZE > 0)
@@ -537,7 +537,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Private remove method that skips bounds checking and does not
      * return the value removed.
      */
-    private void fastRemove(int index) {
+    private void fastRemove(int index) {//快速删除,没有边界检查也不返回删除的值
         modCount++;
         int numMoved = size - index - 1;
         if (numMoved > 0)
@@ -685,7 +685,7 @@ public class ArrayList<E> extends AbstractList<E>
      *         or if the specified collection is null
      * @see Collection#contains(Object)
      */
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(Collection<?> c) {//删除
         Objects.requireNonNull(c);
         return batchRemove(c, false);
     }
@@ -706,7 +706,7 @@ public class ArrayList<E> extends AbstractList<E>
      *         or if the specified collection is null
      * @see Collection#contains(Object)
      */
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(Collection<?> c) {//保留集合中的元素,删除其他
         Objects.requireNonNull(c);
         return batchRemove(c, true);
     }
@@ -837,6 +837,8 @@ public class ArrayList<E> extends AbstractList<E>
     /**
      * An optimized version of AbstractList.Itr
      */
+    //ArrayList的迭代器,如果迭代的时候,使用ArrayList的remove方法,会有ConcurrentModificationException
+    //使用迭代器的remove方法
     private class Itr implements Iterator<E> {
         int cursor;       // index of next element to return
         int lastRet = -1; // index of last element returned; -1 if no such
@@ -868,7 +870,7 @@ public class ArrayList<E> extends AbstractList<E>
                 ArrayList.this.remove(lastRet);
                 cursor = lastRet;
                 lastRet = -1;
-                expectedModCount = modCount;
+                expectedModCount = modCount;//迭代器的remove会有 expectedModCount = modCount 操作
             } catch (IndexOutOfBoundsException ex) {
                 throw new ConcurrentModificationException();
             }
@@ -896,7 +898,7 @@ public class ArrayList<E> extends AbstractList<E>
             checkForComodification();
         }
 
-        final void checkForComodification() {
+        final void checkForComodification() {//检查modCount跟expectedModCount
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
         }
@@ -1007,6 +1009,7 @@ public class ArrayList<E> extends AbstractList<E>
                                                ") > toIndex(" + toIndex + ")");
     }
 
+    //子list
     private class SubList extends AbstractList<E> implements RandomAccess {
         private final AbstractList<E> parent;
         private final int parentOffset;
@@ -1396,7 +1399,7 @@ public class ArrayList<E> extends AbstractList<E>
         // any exception thrown from the filter predicate at this stage
         // will leave the collection unmodified
         int removeCount = 0;
-        final BitSet removeSet = new BitSet(size);
+        final BitSet removeSet = new BitSet(size);//BitSet
         final int expectedModCount = modCount;
         final int size = this.size;
         for (int i=0; modCount == expectedModCount && i < size; i++) {
@@ -1416,7 +1419,7 @@ public class ArrayList<E> extends AbstractList<E>
         if (anyToRemove) {
             final int newSize = size - removeCount;
             for (int i=0, j=0; (i < size) && (j < newSize); i++, j++) {
-                i = removeSet.nextClearBit(i);
+                i = removeSet.nextClearBit(i);//bitset中查看下一个false
                 elementData[j] = elementData[i];
             }
             for (int k=newSize; k < size; k++) {

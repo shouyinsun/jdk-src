@@ -38,7 +38,7 @@ import java.util.Objects;
  * @since 1.8
  */
 @FunctionalInterface
-public interface Function<T, R> {
+public interface Function<T, R> {//Function 接口
 
     /**
      * Applies this function to the given argument.
@@ -46,7 +46,7 @@ public interface Function<T, R> {
      * @param t the function argument
      * @return the function result
      */
-    R apply(T t);
+    R apply(T t);//apply方法
 
     /**
      * Returns a composed function that first applies the {@code before}
@@ -63,6 +63,7 @@ public interface Function<T, R> {
      *
      * @see #andThen(Function)
      */
+    //先执行before
     default <V> Function<V, R> compose(Function<? super V, ? extends T> before) {
         Objects.requireNonNull(before);
         return (V v) -> apply(before.apply(v));
@@ -83,6 +84,7 @@ public interface Function<T, R> {
      *
      * @see #compose(Function)
      */
+    //后执行after
     default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
         return (T t) -> after.apply(apply(t));
