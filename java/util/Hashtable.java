@@ -209,7 +209,7 @@ public class Hashtable<K,V>
      */
     public Hashtable() {
         this(11, 0.75f);
-    }
+    }//初始capacity默认 11
 
     /**
      * Constructs a new hashtable with the same mappings as the given
@@ -386,7 +386,7 @@ public class Hashtable<K,V>
      * and load factor.
      */
     @SuppressWarnings("unchecked")
-    protected void rehash() {
+    protected void rehash() {//扩容 rehash
         int oldCapacity = table.length;
         Entry<?,?>[] oldMap = table;
 
@@ -453,7 +453,7 @@ public class Hashtable<K,V>
      * @see     Object#equals(Object)
      * @see     #get(Object)
      */
-    public synchronized V put(K key, V value) {
+    public synchronized V put(K key, V value) {//hashTable key不能为空,NPE
         // Make sure the value is not null
         if (value == null) {
             throw new NullPointerException();

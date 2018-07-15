@@ -86,6 +86,11 @@ import java.io.InvalidObjectException;
  * @since   1.2
  */
 
+/****
+ *
+ * HashSet 用 HashMap实现
+ * set的元素存储在map的key中,map的value值是相同的
+ */
 public class HashSet<E>
     extends AbstractSet<E>
     implements Set<E>, Cloneable, java.io.Serializable

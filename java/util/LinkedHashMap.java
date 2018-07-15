@@ -160,6 +160,20 @@ import java.io.IOException;
  * @see     Hashtable
  * @since   1.4
  */
+
+
+/****
+ * 继承 HashMap
+ * 带双向指针的 HashMap
+ * Entry 相对于 HashMap.Node 多了 after 跟 before的指针
+ *
+ * node数组还是数组,next指针也在,就是在数组之外,维护了一条所有的node的双向链表
+ *
+ * removeEldestEntry()方法,true跟false标识是否删除最老的entry
+ * 可以用来做 LRU 缓存(重写removeEldestEntry 方法,返回true)
+ *
+ * 有 head 跟 tail 指针,
+ */
 public class LinkedHashMap<K,V>
     extends HashMap<K,V>
     implements Map<K,V>
@@ -201,12 +215,12 @@ public class LinkedHashMap<K,V>
     /**
      * The head (eldest) of the doubly linked list.
      */
-    transient LinkedHashMap.Entry<K,V> head;
+    transient LinkedHashMap.Entry<K,V> head;//头指针
 
     /**
      * The tail (youngest) of the doubly linked list.
      */
-    transient LinkedHashMap.Entry<K,V> tail;
+    transient LinkedHashMap.Entry<K,V> tail;//尾指针
 
     /**
      * The iteration ordering method for this linked hash map: <tt>true</tt>
@@ -255,6 +269,7 @@ public class LinkedHashMap<K,V>
     Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
         LinkedHashMap.Entry<K,V> p =
             new LinkedHashMap.Entry<K,V>(hash, key, value, e);
+        //链到最后面
         linkNodeLast(p);
         return p;
     }
@@ -280,6 +295,7 @@ public class LinkedHashMap<K,V>
         return t;
     }
 
+    //断链
     void afterNodeRemoval(Node<K,V> e) { // unlink
         LinkedHashMap.Entry<K,V> p =
             (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
@@ -294,6 +310,7 @@ public class LinkedHashMap<K,V>
             a.before = b;
     }
 
+    //可能会删除eldest的entry
     void afterNodeInsertion(boolean evict) { // possibly remove eldest
         LinkedHashMap.Entry<K,V> first;
         if (evict && (first = head) != null && removeEldestEntry(first)) {
@@ -302,6 +319,7 @@ public class LinkedHashMap<K,V>
         }
     }
 
+    //最新使用的移动最后面
     void afterNodeAccess(Node<K,V> e) { // move node to last
         LinkedHashMap.Entry<K,V> last;
         if (accessOrder && (last = tail) != e) {
@@ -412,6 +430,7 @@ public class LinkedHashMap<K,V>
      *         specified value
      */
     public boolean containsValue(Object value) {
+        //这里不用走数组,直接走所有node的链表
         for (LinkedHashMap.Entry<K,V> e = head; e != null; e = e.after) {
             V v = e.value;
             if (v == value || (value != null && value.equals(v)))

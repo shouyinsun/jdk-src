@@ -335,6 +335,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     static final int hash(Object key) {//计算key的hash值
         int h;
+        //key为null,放入数组的第一个里面
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
 
