@@ -62,6 +62,19 @@ import java.util.stream.StreamSupport;
  * @author  Martin Buchholz
  * @since   JDK1.0
  */
+
+/****
+ * BitSet 由 long[] 实现
+ * x/64 确定数组下标
+ * x%64,确定所在下标数组的long低n位
+ * 1代表该值 true
+ * 0是没有 false
+ *
+ * bitIndex是从0 开始
+ *
+ * 容易进行 位加算 统计基数
+ *
+ */
 public class BitSet implements Cloneable, java.io.Serializable {
     /*
      * BitSets are packed into arrays of "words."  Currently a word is
@@ -108,6 +121,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
     /**
      * Given a bit index, return word index containing it.
      */
+    //左移6位, bitIndex/64,确定所在的word数组的下标
     private static int wordIndex(int bitIndex) {
         return bitIndex >> ADDRESS_BITS_PER_WORD;
     }
@@ -126,7 +140,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * WARNING:This method assumes that the number of words actually in use is
      * less than or equal to the current value of wordsInUse!
      */
-    private void recalculateWordsInUse() {
+    private void recalculateWordsInUse() {//重新计算wordsInUse,去除数组后面为0的
         // Traverse the bitset until a used word is found
         int i;
         for (i = wordsInUse-1; i >= 0; i--)
@@ -163,6 +177,8 @@ public class BitSet implements Cloneable, java.io.Serializable {
     }
 
     private void initWords(int nbits) {
+        // 129
+        // (129-1)/64+1 =3
         words = new long[wordIndex(nbits-1) + 1];
     }
 
@@ -375,15 +391,15 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the specified index is negative
      * @since  1.4
      */
-    public void flip(int bitIndex) {
+    public void flip(int bitIndex) {//第bitIndex位的值,反转
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
         int wordIndex = wordIndex(bitIndex);
         expandTo(wordIndex);
-
+        //1<<65 ==2
+        //对long类型的值左移65位 实际是左移了65%64=1位
         words[wordIndex] ^= (1L << bitIndex);
-
         recalculateWordsInUse();
         checkInvariants();
     }
@@ -439,7 +455,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the specified index is negative
      * @since  JDK1.0
      */
-    public void set(int bitIndex) {
+    public void set(int bitIndex) {//bitIndex 从0开始 bitIndex 位设置成1
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
@@ -477,7 +493,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *         larger than {@code toIndex}
      * @since  1.4
      */
-    public void set(int fromIndex, int toIndex) {
+    public void set(int fromIndex, int toIndex) {//[fromIndex,toIndex) 位设置成 1
         checkRange(fromIndex, toIndex);
 
         if (fromIndex == toIndex)
@@ -535,7 +551,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the specified index is negative
      * @since  JDK1.0
      */
-    public void clear(int bitIndex) {
+    public void clear(int bitIndex) {//bitIndex 位设置成0
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
@@ -618,7 +634,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @return the value of the bit with the specified index
      * @throws IndexOutOfBoundsException if the specified index is negative
      */
-    public boolean get(int bitIndex) {
+    public boolean get(int bitIndex) {//bitIndex位的值
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
@@ -707,7 +723,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the specified index is negative
      * @since  1.4
      */
-    public int nextSetBit(int fromIndex) {
+    public int nextSetBit(int fromIndex) {//返回fromIndex后第一个为1的bitIndex
         if (fromIndex < 0)
             throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
 
@@ -737,7 +753,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @throws IndexOutOfBoundsException if the specified index is negative
      * @since  1.4
      */
-    public int nextClearBit(int fromIndex) {
+    public int nextClearBit(int fromIndex) {//返回fromIndex后第一个为0的bitIndex
         // Neither spec nor implementation handle bitsets of maximal length.
         // See 4816253.
         if (fromIndex < 0)
@@ -893,7 +909,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      * @return the number of bits set to {@code true} in this {@code BitSet}
      * @since  1.4
      */
-    public int cardinality() {
+    public int cardinality() {//bitSet中1的个数
         int sum = 0;
         for (int i = 0; i < wordsInUse; i++)
             sum += Long.bitCount(words[i]);
