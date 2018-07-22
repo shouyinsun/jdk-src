@@ -80,6 +80,14 @@ import java.util.function.UnaryOperator;
  * @see LinkedList
  * @since   JDK1.0
  */
+
+
+/***
+ *Vector 实现自动增长的数组
+ *每次增长 capacityIncrement,<=0,就是 double
+ *同步方法
+ *
+ */
 public class Vector<E>
     extends AbstractList<E>
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable
@@ -257,6 +265,7 @@ public class Vector<E>
     private void grow(int minCapacity) {
         // overflow-conscious code
         int oldCapacity = elementData.length;
+        //capacityIncrement 不大于0,newCapacity = oldCapacity*2
         int newCapacity = oldCapacity + ((capacityIncrement > 0) ?
                                          capacityIncrement : oldCapacity);
         if (newCapacity - minCapacity < 0)

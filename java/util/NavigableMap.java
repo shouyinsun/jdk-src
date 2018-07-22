@@ -92,6 +92,12 @@ package java.util;
  * @param <V> the type of mapped values
  * @since 1.6
  */
+
+/***
+ *
+ * NavigableMap
+ * 提供了给定搜索目标返回最接近匹配项的导航方法
+ */
 public interface NavigableMap<K,V> extends SortedMap<K,V> {
     /**
      * Returns a key-value mapping associated with the greatest key

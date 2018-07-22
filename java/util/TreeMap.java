@@ -108,6 +108,13 @@ import java.util.function.Consumer;
  * @since 1.2
  */
 
+
+/****
+ * TreeMap是基于红黑树结构实现的一种Map
+ * 使用comparator 比较器,进行红黑树的构造
+ * 可以使用导航方法进行搜索目标对象
+ *
+ */
 public class TreeMap<K,V>
     extends AbstractMap<K,V>
     implements NavigableMap<K,V>, Cloneable, java.io.Serializable
@@ -118,8 +125,11 @@ public class TreeMap<K,V>
      *
      * @serial
      */
+
+    //比较器
     private final Comparator<? super K> comparator;
 
+    //红黑树的根节点
     private transient Entry<K,V> root;
 
     /**
@@ -533,6 +543,7 @@ public class TreeMap<K,V>
      *         does not permit null keys
      */
     public V put(K key, V value) {
+        // 根节点s
         Entry<K,V> t = root;
         if (t == null) {
             compare(key, key); // type (and possibly null) check
@@ -558,7 +569,8 @@ public class TreeMap<K,V>
                     return t.setValue(value);
             } while (t != null);
         }
-        else {
+        else { // 如果比较器为空 则使用key作为比较器进行比较
+               // 这里要求key不能为空 并且必须实现Comparable接口
             if (key == null)
                 throw new NullPointerException();
             @SuppressWarnings("unchecked")
@@ -579,6 +591,7 @@ public class TreeMap<K,V>
             parent.left = e;
         else
             parent.right = e;
+        // 插入新的节点后 为了保持红黑树平衡 对红黑树进行调整
         fixAfterInsertion(e);
         size++;
         modCount++;
@@ -2053,9 +2066,13 @@ public class TreeMap<K,V>
     static final class Entry<K,V> implements Map.Entry<K,V> {
         K key;
         V value;
+        // 左孩子节点
         Entry<K,V> left;
+        // 右孩子节点
         Entry<K,V> right;
+        // 父节点
         Entry<K,V> parent;
+        // 红黑树用来表示节点颜色的属性 默认为黑色
         boolean color = BLACK;
 
         /**
@@ -2254,9 +2271,13 @@ public class TreeMap<K,V>
     }
 
     /** From CLR */
+    /** 新增节点后对红黑树的调整方法 */
     private void fixAfterInsertion(Entry<K,V> x) {
+        // 将新插入节点的颜色设置为红色
         x.color = RED;
 
+
+        // while循环 保证新插入节点x不是根节点或者新插入节点x的父节点不是红色（这两种情况不需要调整）
         while (x != null && x != root && x.parent.color == RED) {
             if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
                 Entry<K,V> y = rightOf(parentOf(parentOf(x)));

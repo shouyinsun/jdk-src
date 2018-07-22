@@ -45,6 +45,13 @@ package java.util;
  * @author  Jonathan Payne
  * @since   JDK1.0
  */
+
+
+/***
+ *
+ * stack 使用 Vector 实现
+ * 数组控制 FIFO
+ */
 public
 class Stack<E> extends Vector<E> {
     /**
@@ -95,7 +102,7 @@ class Stack<E> extends Vector<E> {
      *          of the <tt>Vector</tt> object).
      * @throws  EmptyStackException  if this stack is empty.
      */
-    public synchronized E peek() {
+    public synchronized E peek() {//peek 只看不删
         int     len = size();
 
         if (len == 0)

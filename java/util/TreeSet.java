@@ -89,6 +89,13 @@ package java.util;
  * @since   1.2
  */
 
+
+/***
+ *
+ * TreeSet依靠TreeMap来实现
+ * map中 key是set里的值
+ *       value全相同 PRESENT
+ */
 public class TreeSet<E> extends AbstractSet<E>
     implements NavigableSet<E>, Cloneable, java.io.Serializable
 {
