@@ -67,6 +67,15 @@ import java.security.*;
  *
  * @since   1.5
  */
+
+/****
+ * 版本
+ *
+ * time-based    1
+ * DCE security  2
+ * name-based    3
+ * randomly generated UUIDs  4
+ */
 public final class UUID implements java.io.Serializable, Comparable<UUID> {
 
     /**
@@ -138,7 +147,7 @@ public final class UUID implements java.io.Serializable, Comparable<UUID> {
      *
      * @return  A randomly generated {@code UUID}
      */
-    public static UUID randomUUID() {
+    public static UUID randomUUID() {//版本4
         SecureRandom ng = Holder.numberGenerator;
 
         byte[] randomBytes = new byte[16];
@@ -159,7 +168,7 @@ public final class UUID implements java.io.Serializable, Comparable<UUID> {
      *
      * @return  A {@code UUID} generated from the specified array
      */
-    public static UUID nameUUIDFromBytes(byte[] name) {
+    public static UUID nameUUIDFromBytes(byte[] name) {//版本3
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
@@ -372,7 +381,7 @@ public final class UUID implements java.io.Serializable, Comparable<UUID> {
      *
      * @return  A string representation of this {@code UUID}
      */
-    public String toString() {
+    public String toString() {//4个 -
         return (digits(mostSigBits >> 32, 8) + "-" +
                 digits(mostSigBits >> 16, 4) + "-" +
                 digits(mostSigBits, 4) + "-" +

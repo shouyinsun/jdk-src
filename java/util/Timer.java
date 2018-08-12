@@ -86,6 +86,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since   1.3
  */
 
+
+/****
+ * 维护一个task队列,依赖synchronized   wait/notify
+ * task都有一个lock
+ *
+ *
+ *
+ */
 public class Timer {
     /**
      * The timer task queue.  This data structure is shared with the timer
@@ -406,7 +414,7 @@ public class Timer {
             }
 
             queue.add(task);
-            if (queue.getMin() == task)
+            if (queue.getMin() == task)//第一个,非空,唤醒
                 queue.notify();
         }
     }
@@ -515,13 +523,14 @@ class TimerThread extends Thread {
     /**
      * The main timer loop.  (See class comment.)
      */
-    private void mainLoop() {
+    private void mainLoop() {//主循环
         while (true) {
             try {
                 TimerTask task;
                 boolean taskFired;
                 synchronized(queue) {
                     // Wait for queue to become non-empty
+                    // task对列为空,等待queue
                     while (queue.isEmpty() && newTasksMayBeScheduled)
                         queue.wait();
                     if (queue.isEmpty())
@@ -549,6 +558,7 @@ class TimerThread extends Thread {
                         }
                     }
                     if (!taskFired) // Task hasn't yet fired; wait
+                        //wait()到下次执行时间
                         queue.wait(executionTime - currentTime);
                 }
                 if (taskFired)  // Task fired; run it, holding no locks
@@ -646,6 +656,7 @@ class TaskQueue {
      */
     void rescheduleMin(long newTime) {
         queue[1].nextExecutionTime = newTime;
+        //fix 调整
         fixDown(1);
     }
 

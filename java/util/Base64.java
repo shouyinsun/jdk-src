@@ -74,6 +74,24 @@ import java.nio.charset.StandardCharsets;
  * @since   1.8
  */
 
+
+/****
+ *
+ *
+ * Base64要求把每三个8Bit的字节转换为四个6Bit的字节（3*8 = 4*6 = 24）
+ * 然后把6Bit再添两位高位0 组成四个8Bit的字节
+ * 也就是说,转换后的字符串理论上将要比原来的长1/3
+ *
+ * Base64就是一种基于64个可打印字符来表示二进制数据
+ * ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
+ *
+ * url类型(含/)：ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
+ *
+ * 带换行的base64
+ *
+ *
+ *
+ */
 public class Base64 {
 
     private Base64() {}
@@ -398,10 +416,12 @@ public class Base64 {
             int dp = 0;
             while (sp < sl) {
                 int sl0 = Math.min(sp + slen, sl);
+                //取3个byte
                 for (int sp0 = sp, dp0 = dp ; sp0 < sl0; ) {
                     int bits = (src[sp0++] & 0xff) << 16 |
                                (src[sp0++] & 0xff) <<  8 |
                                (src[sp0++] & 0xff);
+                    //每组6个分成4个byte,高位补零
                     dst[dp0++] = (byte)base64[(bits >>> 18) & 0x3f];
                     dst[dp0++] = (byte)base64[(bits >>> 12) & 0x3f];
                     dst[dp0++] = (byte)base64[(bits >>> 6)  & 0x3f];
@@ -416,16 +436,17 @@ public class Base64 {
                     }
                 }
             }
+            //剩下一个或两个byte
             if (sp < end) {               // 1 or 2 leftover bytes
                 int b0 = src[sp++] & 0xff;
                 dst[dp++] = (byte)base64[b0 >> 2];
-                if (sp == end) {
+                if (sp == end) {//剩一个byte,补两个 ==
                     dst[dp++] = (byte)base64[(b0 << 4) & 0x3f];
                     if (doPadding) {
                         dst[dp++] = '=';
                         dst[dp++] = '=';
                     }
-                } else {
+                } else {//补一个 =
                     int b1 = src[sp++] & 0xff;
                     dst[dp++] = (byte)base64[(b0 << 4) & 0x3f | (b1 >> 4)];
                     dst[dp++] = (byte)base64[(b1 << 2) & 0x3f];

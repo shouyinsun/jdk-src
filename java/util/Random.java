@@ -73,6 +73,19 @@ import sun.misc.Unsafe;
  * @author  Frank Yellin
  * @since   1.0
  */
+
+/***
+ *  pseudorandom 是伪随机
+ *
+ *  Random random = new Random(50);
+    Random random1 = new Random(50);
+
+    random.nextInt(100)==random1.nextInt(100)
+
+
+    指定了相同 seed的Random 产生的是一样的,算法跟值都是确定的
+ *
+ */
 public
 class Random implements java.io.Serializable {
     /** use serialVersionUID from JDK 1.1 for interoperability */
@@ -101,7 +114,7 @@ class Random implements java.io.Serializable {
      * the seed of the random number generator to a value very likely
      * to be distinct from any other invocation of this constructor.
      */
-    public Random() {
+    public Random() {//没有指定seed,会使用到当前的时间
         this(seedUniquifier() ^ System.nanoTime());
     }
 
@@ -195,11 +208,12 @@ class Random implements java.io.Serializable {
      *         generator's sequence
      * @since  1.1
      */
-    protected int next(int bits) {
+    protected int next(int bits) {//bit位,会不断更新seed
         long oldseed, nextseed;
         AtomicLong seed = this.seed;
         do {
             oldseed = seed.get();
+            //mask 是48位
             nextseed = (oldseed * multiplier + addend) & mask;
         } while (!seed.compareAndSet(oldseed, nextseed));
         return (int)(nextseed >>> (48 - bits));
@@ -224,6 +238,7 @@ class Random implements java.io.Serializable {
      * @throws NullPointerException if the byte array is null
      * @since  1.1
      */
+    //bytes数组长度的随机byte,填充bytes数组
     public void nextBytes(byte[] bytes) {
         for (int i = 0, len = bytes.length; i < len; )
             for (int rnd = nextInt(),
