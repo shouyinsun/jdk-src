@@ -133,6 +133,14 @@ import java.util.function.Consumer;
  * @see         java.util.HashMap
  * @see         java.lang.ref.WeakReference
  */
+
+/****
+ *
+ * WeakHashMap的Entry是"弱对象"。在 WeakHashMap 中,当某个Entry不再正常使用时,会被从WeakHashMap中被自动移除
+ *
+ *  WeakHashMap的Entry是WeakReference类型的；ReferenceQueue是一个队列,它会保存被GC回收的"弱"Entry
+ *
+ */
 public class WeakHashMap<K,V>
     extends AbstractMap<K,V>
     implements Map<K,V> {
@@ -314,10 +322,13 @@ public class WeakHashMap<K,V>
     /**
      * Expunges stale entries from the table.
      */
+    //删除过期的entries
+    //进行相应操作前都会先调用 删除过期entries操作
     private void expungeStaleEntries() {
         for (Object x; (x = queue.poll()) != null; ) {
             synchronized (queue) {
                 @SuppressWarnings("unchecked")
+                    //queue中存放中被gc回收的Entry
                     Entry<K,V> e = (Entry<K,V>) x;
                 int i = indexFor(e.hash, table.length);
 
