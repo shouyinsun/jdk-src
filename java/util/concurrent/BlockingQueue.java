@@ -177,6 +177,20 @@ import java.util.Queue;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
+
+
+/****
+ *
+ * 阻塞队列
+ *
+ * 抛异常    add                       remove
+ * 特殊值    offer (false)             poll (null)
+ * 阻塞      put                       take
+ * 超时      offer(long, TimeUnit)     poll(long, TimeUnit)
+ *
+ *
+ * 不能有null 元素,直接空指针
+ */
 public interface BlockingQueue<E> extends Queue<E> {
     /**
      * Inserts the specified element into this queue if it is possible to do

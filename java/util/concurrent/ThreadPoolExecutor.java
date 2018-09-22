@@ -316,6 +316,15 @@ import java.util.*;
  * @since 1.5
  * @author Doug Lea
  */
+
+
+/****
+ * 提交新任务时,小于核心线程数,默认同样也会新建一个线程
+ * 使用newCachedThreadPool时 会先判断是否有缓存
+ *
+ *
+ *
+ */
 public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * The main pool control state, ctl, is an atomic integer packing
@@ -373,6 +382,13 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * we can only terminate if, after seeing that it is empty, we see
      * that workerCount is 0 (which sometimes entails a recheck -- see
      * below).
+     */
+    /***
+     *
+     *
+     * workerCount 跟 runState 在 ctl 中
+     * workerCount 低29位 (2^29)-1
+     * runState 运行状态用 高3位 表示
      */
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
     private static final int COUNT_BITS = Integer.SIZE - 3;
@@ -456,6 +472,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * ensuring workers set is stable while separately checking
      * permission to interrupt and actually interrupting.
      */
+    //main锁
     private final ReentrantLock mainLock = new ReentrantLock();
 
     /**
@@ -543,6 +560,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * The default rejected execution handler
      */
+    //默认abort 抛出异常
     private static final RejectedExecutionHandler defaultHandler =
         new AbortPolicy();
 
@@ -585,6 +603,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * state to a negative value, and clear it upon start (in
      * runWorker).
      */
+
+    //worker 继承 AQS
     private final class Worker
         extends AbstractQueuedSynchronizer
         implements Runnable
@@ -1329,6 +1349,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      *         cannot be accepted for execution
      * @throws NullPointerException if {@code command} is null
      */
+    //execute 添加worker ,后面执行
     public void execute(Runnable command) {
         if (command == null)
             throw new NullPointerException();
@@ -1354,10 +1375,12 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          */
         int c = ctl.get();
         if (workerCountOf(c) < corePoolSize) {
+            //先添加 core 的worker
             if (addWorker(command, true))
                 return;
             c = ctl.get();
         }
+        //进队列
         if (isRunning(c) && workQueue.offer(command)) {
             int recheck = ctl.get();
             if (! isRunning(recheck) && remove(command))
@@ -1365,6 +1388,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
             else if (workerCountOf(recheck) == 0)
                 addWorker(null, false);
         }
+        //添加非core work
         else if (!addWorker(command, false))
             reject(command);
     }
@@ -1762,7 +1786,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * However, this method may fail to remove tasks in
      * the presence of interference by other threads.
      */
-    public void purge() {
+    public void purge() {//净化,去除feture 并被取消的task
         final BlockingQueue<Runnable> q = workQueue;
         try {
             Iterator<Runnable> it = q.iterator();
@@ -2004,6 +2028,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * unless the executor has been shut down, in which case the task
      * is discarded.
      */
+    //直接 run
     public static class CallerRunsPolicy implements RejectedExecutionHandler {
         /**
          * Creates a {@code CallerRunsPolicy}.
@@ -2028,6 +2053,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * A handler for rejected tasks that throws a
      * {@code RejectedExecutionException}.
      */
+    //中止,抛出异常
     public static class AbortPolicy implements RejectedExecutionHandler {
         /**
          * Creates an {@code AbortPolicy}.
@@ -2064,6 +2090,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * @param r the runnable task requested to be executed
          * @param e the executor attempting to execute this task
          */
+        //丢弃,啥也不做
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
         }
     }
@@ -2088,6 +2115,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * @param r the runnable task requested to be executed
          * @param e the executor attempting to execute this task
          */
+
+        //丢弃最久远的
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             if (!e.isShutdown()) {
                 e.getQueue().poll();

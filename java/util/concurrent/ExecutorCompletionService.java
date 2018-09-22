@@ -104,9 +104,11 @@ package java.util.concurrent;
  *         use(result);
  * }}</pre>
  */
+//执行成功的任务会放入completion队列
 public class ExecutorCompletionService<V> implements CompletionService<V> {
     private final Executor executor;
     private final AbstractExecutorService aes;
+    //阻塞队列
     private final BlockingQueue<Future<V>> completionQueue;
 
     /**
@@ -117,6 +119,7 @@ public class ExecutorCompletionService<V> implements CompletionService<V> {
             super(task, null);
             this.task = task;
         }
+        //放入completion队列
         protected void done() { completionQueue.add(task); }
         private final Future<V> task;
     }
@@ -190,10 +193,12 @@ public class ExecutorCompletionService<V> implements CompletionService<V> {
     }
 
     public Future<V> take() throws InterruptedException {
+        //阻塞队列 take 阻塞
         return completionQueue.take();
     }
 
     public Future<V> poll() {
+        //阻塞队列 poll 不阻塞,没有,返回null
         return completionQueue.poll();
     }
 

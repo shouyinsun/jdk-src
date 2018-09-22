@@ -68,6 +68,7 @@ import java.util.*;
  * @since 1.5
  * @author Doug Lea
  */
+//ThreadPoolExecutor 继承 AbstractExecutorService
 public abstract class AbstractExecutorService implements ExecutorService {
 
     /**
@@ -131,6 +132,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
     public <T> Future<T> submit(Callable<T> task) {
         if (task == null) throw new NullPointerException();
         RunnableFuture<T> ftask = newTaskFor(task);
+        //子类中实现
         execute(ftask);
         return ftask;
     }
@@ -147,6 +149,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
         if (ntasks == 0)
             throw new IllegalArgumentException();
         ArrayList<Future<T>> futures = new ArrayList<Future<T>>(ntasks);
+        //使用 ExecutorCompletionService,完成的task放入 completionQueue
         ExecutorCompletionService<T> ecs =
             new ExecutorCompletionService<T>(this);
 
@@ -170,7 +173,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
 
             for (;;) {
                 Future<T> f = ecs.poll();
-                if (f == null) {
+                if (f == null) {//一个个的添加
                     if (ntasks > 0) {
                         --ntasks;
                         futures.add(ecs.submit(it.next()));
@@ -190,6 +193,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
                 if (f != null) {
                     --active;
                     try {
+                        //有一个执行完,就return
                         return f.get();
                     } catch (ExecutionException eex) {
                         ee = eex;
@@ -203,7 +207,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
                 ee = new ExecutionException();
             throw ee;
 
-        } finally {
+        } finally {//取消任务
             for (int i = 0, size = futures.size(); i < size; i++)
                 futures.get(i).cancel(true);
         }
@@ -232,7 +236,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
         ArrayList<Future<T>> futures = new ArrayList<Future<T>>(tasks.size());
         boolean done = false;
         try {
-            for (Callable<T> t : tasks) {
+            for (Callable<T> t : tasks) {//一股脑全部加入
                 RunnableFuture<T> f = newTaskFor(t);
                 futures.add(f);
                 execute(f);
@@ -241,7 +245,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
                 Future<T> f = futures.get(i);
                 if (!f.isDone()) {
                     try {
-                        f.get();
+                        f.get();//阻塞
                     } catch (CancellationException ignore) {
                     } catch (ExecutionException ignore) {
                     }
