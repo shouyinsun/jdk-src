@@ -188,6 +188,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
     public V get() throws InterruptedException, ExecutionException {
         int s = state;
         if (s <= COMPLETING)
+            //等待
             s = awaitDone(false, 0L);
         return report(s);
     }
@@ -201,6 +202,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
             throw new NullPointerException();
         int s = state;
         if (s <= COMPLETING &&
+                //带超时时间 等待
             (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING)
             throw new TimeoutException();
         return report(s);
@@ -271,6 +273,8 @@ public class FutureTask<V> implements RunnableFuture<V> {
                     setException(ex);
                 }
                 if (ran)
+                    //run 里面调用 set
+                    // set callable执行的结果
                     set(result);
             }
         } finally {
@@ -305,6 +309,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
             Callable<V> c = callable;
             if (c != null && s == NEW) {
                 try {
+                    //不设置值
                     c.call(); // don't set result
                     ran = true;
                 } catch (Throwable ex) {

@@ -153,11 +153,16 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  * @since 1.5
  * @author Doug Lea
  */
+
+/***
+ * CountDownLatch 是一次性的,如果需要reset 使用 CyclicBarrier
+ */
 public class CountDownLatch {
     /**
      * Synchronization control For CountDownLatch.
      * Uses AQS state to represent count.
      */
+    //AQS,state的值作为count
     private static final class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = 4982264981922014374L;
 
@@ -175,11 +180,12 @@ public class CountDownLatch {
 
         protected boolean tryReleaseShared(int releases) {
             // Decrement count; signal when transition to zero
-            for (;;) {
+            for (;;) {//自旋
                 int c = getState();
                 if (c == 0)
                     return false;
-                int nextc = c-1;
+                int nextc = c-1;//state 减一
+                //cas
                 if (compareAndSetState(c, nextc))
                     return nextc == 0;
             }
@@ -226,6 +232,13 @@ public class CountDownLatch {
      *
      * @throws InterruptedException if the current thread is interrupted
      *         while waiting
+     */
+    /****
+     *
+     * 自旋等待state为0
+     *
+     * 如果有多个await,只要state为0,就瞬间执行完
+     *
      */
     public void await() throws InterruptedException {
         sync.acquireSharedInterruptibly(1);
@@ -286,6 +299,9 @@ public class CountDownLatch {
      * thread scheduling purposes.
      *
      * <p>If the current count equals zero then nothing happens.
+     */
+    /***
+     * state 自旋+cas  减一
      */
     public void countDown() {
         sync.releaseShared(1);

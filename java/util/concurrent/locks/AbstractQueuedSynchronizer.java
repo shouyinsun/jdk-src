@@ -1019,6 +1019,7 @@ public abstract class AbstractQueuedSynchronizer
             for (;;) {
                 final Node p = node.predecessor();
                 if (p == head) {
+                    //tryAcquireShared 各子类实现
                     int r = tryAcquireShared(arg);
                     if (r >= 0) {
                         setHeadAndPropagate(node, r);
@@ -1027,6 +1028,9 @@ public abstract class AbstractQueuedSynchronizer
                         return;
                     }
                 }
+                //shouldParkAfterFailedAcquire 判断是否需要挂起
+                //parkAndCheckInterrupt 挂起当前线程
+                //被唤醒之后,继续执行
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())
                     throw new InterruptedException();
@@ -1168,6 +1172,7 @@ public abstract class AbstractQueuedSynchronizer
      *         correctly.
      * @throws UnsupportedOperationException if shared mode is not supported
      */
+    //tryAcquireShared 各子类实现
     protected int tryAcquireShared(int arg) {
         throw new UnsupportedOperationException();
     }
@@ -1341,7 +1346,8 @@ public abstract class AbstractQueuedSynchronizer
             throws InterruptedException {
         if (Thread.interrupted())
             throw new InterruptedException();
-        if (tryAcquireShared(arg) < 0)
+        if (tryAcquireShared(arg) < 0)//没有获得
+            //挂起,等待唤醒
             doAcquireSharedInterruptibly(arg);
     }
 
@@ -1380,6 +1386,7 @@ public abstract class AbstractQueuedSynchronizer
      */
     public final boolean releaseShared(int arg) {
         if (tryReleaseShared(arg)) {
+            //唤醒后继节点
             doReleaseShared();
             return true;
         }

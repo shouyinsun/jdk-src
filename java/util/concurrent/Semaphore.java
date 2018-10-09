@@ -153,6 +153,9 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  * @since 1.5
  * @author Doug Lea
  */
+
+
+//信号量  acquire 跟 release
 public class Semaphore implements java.io.Serializable {
     private static final long serialVersionUID = -3222578661600680210L;
     /** All mechanics via AbstractQueuedSynchronizer subclass */
@@ -163,6 +166,7 @@ public class Semaphore implements java.io.Serializable {
      * to represent permits. Subclassed into fair and nonfair
      * versions.
      */
+    //继承AQS,aqs的state 作为 permits
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = 1192457210091910933L;
 
@@ -174,23 +178,25 @@ public class Semaphore implements java.io.Serializable {
             return getState();
         }
 
-        final int nonfairTryAcquireShared(int acquires) {
-            for (;;) {
+        final int nonfairTryAcquireShared(int acquires) {//非公平,不管排队,直接去取
+            for (;;) {//自旋
                 int available = getState();
                 int remaining = available - acquires;
-                if (remaining < 0 ||
+
+                if (remaining < 0 ||//少于获得数,返回负值
+                        //cas
                     compareAndSetState(available, remaining))
                     return remaining;
             }
         }
 
         protected final boolean tryReleaseShared(int releases) {
-            for (;;) {
+            for (;;) {//自旋
                 int current = getState();
                 int next = current + releases;
                 if (next < current) // overflow
                     throw new Error("Maximum permit count exceeded");
-                if (compareAndSetState(current, next))
+                if (compareAndSetState(current, next))//cas
                     return true;
             }
         }
@@ -218,7 +224,7 @@ public class Semaphore implements java.io.Serializable {
     /**
      * NonFair version
      */
-    static final class NonfairSync extends Sync {
+    static final class NonfairSync extends Sync {//非公平
         private static final long serialVersionUID = -2694183684443567898L;
 
         NonfairSync(int permits) {
@@ -233,7 +239,7 @@ public class Semaphore implements java.io.Serializable {
     /**
      * Fair version
      */
-    static final class FairSync extends Sync {
+    static final class FairSync extends Sync {//公平
         private static final long serialVersionUID = 2014338818796000944L;
 
         FairSync(int permits) {
@@ -242,7 +248,7 @@ public class Semaphore implements java.io.Serializable {
 
         protected int tryAcquireShared(int acquires) {
             for (;;) {
-                if (hasQueuedPredecessors())
+                if (hasQueuedPredecessors())//已有在排队,失败
                     return -1;
                 int available = getState();
                 int remaining = available - acquires;
@@ -261,6 +267,7 @@ public class Semaphore implements java.io.Serializable {
      *        This value may be negative, in which case releases
      *        must occur before any acquires will be granted.
      */
+    //默认,非公平
     public Semaphore(int permits) {
         sync = new NonfairSync(permits);
     }

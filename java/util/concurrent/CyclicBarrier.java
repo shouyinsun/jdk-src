@@ -136,6 +136,17 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Doug Lea
  */
+
+
+/****
+ * CyclicBarrier是一个同步辅助类
+ * 它允许一组线程互相等待，直到所有线程都到达某个公共屏障点(也可以叫同步点)
+ * 即相互等待的线程都完成调用await方法 所有被屏障拦截的线程才会继续运行await方法后面的程序
+ *
+ * 存在一个 Generation 概念
+ * 可以 reset 重置
+ *
+ */
 public class CyclicBarrier {
     /**
      * Each use of the barrier is represented as a generation instance.
@@ -203,26 +214,28 @@ public class CyclicBarrier {
         try {
             final Generation g = generation;
 
-            if (g.broken)
+            if (g.broken)//如果当前Generation是处于打破状态
                 throw new BrokenBarrierException();
 
-            if (Thread.interrupted()) {
+            if (Thread.interrupted()) {////如果当前线程被中断则使得当前generation处于打破状态
+                // 重置剩余count 并且唤醒状态变量
                 breakBarrier();
                 throw new InterruptedException();
             }
 
             int index = --count;
-            if (index == 0) {  // tripped
+            if (index == 0) {  // 最后一个 tripped
                 boolean ranAction = false;
                 try {
                     final Runnable command = barrierCommand;
                     if (command != null)
+                        //执行command
                         command.run();
                     ranAction = true;
                     nextGeneration();
                     return 0;
                 } finally {
-                    if (!ranAction)
+                    if (!ranAction)//如果运行command失败也会导致当前屏障被打破
                         breakBarrier();
                 }
             }
@@ -230,7 +243,7 @@ public class CyclicBarrier {
             // loop until tripped, broken, interrupted, or timed out
             for (;;) {
                 try {
-                    if (!timed)
+                    if (!timed)//阻塞在当前的状态变量
                         trip.await();
                     else if (nanos > 0L)
                         nanos = trip.awaitNanos(nanos);
@@ -245,7 +258,7 @@ public class CyclicBarrier {
                         Thread.currentThread().interrupt();
                     }
                 }
-
+                //从阻塞恢复
                 if (g.broken)
                     throw new BrokenBarrierException();
 
