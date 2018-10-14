@@ -88,6 +88,14 @@ import java.util.function.UnaryOperator;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
+
+
+/***
+ *
+ * copyOnWriteArrayList 写时复制,读是并发的,读写分离,适用于读多写少
+ * 更新时,都会加锁
+ *
+ */
 public class CopyOnWriteArrayList<E>
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 8673264195747942595L;
@@ -96,6 +104,8 @@ public class CopyOnWriteArrayList<E>
     final transient ReentrantLock lock = new ReentrantLock();
 
     /** The array, accessed only via getArray/setArray. */
+
+    //volatile
     private transient volatile Object[] array;
 
     /**
@@ -411,8 +421,10 @@ public class CopyOnWriteArrayList<E>
 
             if (oldValue != element) {
                 int len = elements.length;
+                //复制一个新的数组
                 Object[] newElements = Arrays.copyOf(elements, len);
                 newElements[index] = element;
+                //将新数组赋给全局array
                 setArray(newElements);
             } else {
                 // Not quite a no-op; ensures volatile write semantics
@@ -436,8 +448,10 @@ public class CopyOnWriteArrayList<E>
         try {
             Object[] elements = getArray();
             int len = elements.length;
+            //复制一个新的数组
             Object[] newElements = Arrays.copyOf(elements, len + 1);
             newElements[len] = e;
+            //将新数组赋给全局array
             setArray(newElements);
             return true;
         } finally {
@@ -452,7 +466,7 @@ public class CopyOnWriteArrayList<E>
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public void add(int index, E element) {
+    public void add(int index, E element) {//add每次都要复制新数组,开销较大,适合读多写少的场景
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -463,15 +477,18 @@ public class CopyOnWriteArrayList<E>
                                                     ", Size: "+len);
             Object[] newElements;
             int numMoved = len - index;
+            //复制一个新的数组
             if (numMoved == 0)
                 newElements = Arrays.copyOf(elements, len + 1);
             else {
                 newElements = new Object[len + 1];
                 System.arraycopy(elements, 0, newElements, 0, index);
+                //后面的一次右移
                 System.arraycopy(elements, index, newElements, index + 1,
                                  numMoved);
             }
             newElements[index] = element;
+            //设置全局array
             setArray(newElements);
         } finally {
             lock.unlock();
@@ -522,7 +539,8 @@ public class CopyOnWriteArrayList<E>
      * @return {@code true} if this list contained the specified element
      */
     public boolean remove(Object o) {
-        Object[] snapshot = getArray();
+        Object[] snapshot = getArray();//快照
+        //快照中存在o index
         int index = indexOf(o, snapshot, 0, snapshot.length);
         return (index < 0) ? false : remove(o, snapshot, index);
     }
@@ -537,6 +555,7 @@ public class CopyOnWriteArrayList<E>
         try {
             Object[] current = getArray();
             int len = current.length;
+            //snapshot跟current是否相等
             if (snapshot != current) findIndex: {
                 int prefix = Math.min(index, len);
                 for (int i = 0; i < prefix; i++) {
@@ -553,11 +572,13 @@ public class CopyOnWriteArrayList<E>
                 if (index < 0)
                     return false;
             }
+            //从current copy新的数组
             Object[] newElements = new Object[len - 1];
             System.arraycopy(current, 0, newElements, 0, index);
             System.arraycopy(current, index + 1,
                              newElements, index,
                              len - index - 1);
+            //设置全局数组
             setArray(newElements);
             return true;
         } finally {
@@ -609,7 +630,7 @@ public class CopyOnWriteArrayList<E>
      * @return {@code true} if the element was added
      */
     public boolean addIfAbsent(E e) {
-        Object[] snapshot = getArray();
+        Object[] snapshot = getArray();//快照
         return indexOf(e, snapshot, 0, snapshot.length) >= 0 ? false :
             addIfAbsent(e, snapshot);
     }
@@ -688,6 +709,7 @@ public class CopyOnWriteArrayList<E>
             if (len != 0) {
                 // temp array holds those elements we know we want to keep
                 int newlen = 0;
+                //temp数组,新的数组
                 Object[] temp = new Object[len];
                 for (int i = 0; i < len; ++i) {
                     Object element = elements[i];
@@ -695,6 +717,7 @@ public class CopyOnWriteArrayList<E>
                         temp[newlen++] = element;
                 }
                 if (newlen != len) {
+                    //设置全局数组
                     setArray(Arrays.copyOf(temp, newlen));
                     return true;
                 }
@@ -721,7 +744,7 @@ public class CopyOnWriteArrayList<E>
      *         or if the specified collection is null
      * @see #remove(Object)
      */
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(Collection<?> c) {//保留包含的,去除所有不包含的
         if (c == null) throw new NullPointerException();
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -811,7 +834,7 @@ public class CopyOnWriteArrayList<E>
      * @throws NullPointerException if the specified collection is null
      * @see #add(Object)
      */
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(Collection<? extends E> c) {//全部加入list后面
         Object[] cs = (c.getClass() == CopyOnWriteArrayList.class) ?
             ((CopyOnWriteArrayList<?>)c).getArray() : c.toArray();
         if (cs.length == 0)
@@ -1126,6 +1149,8 @@ public class CopyOnWriteArrayList<E>
             (getArray(), Spliterator.IMMUTABLE | Spliterator.ORDERED);
     }
 
+    //COWIterator CopyOnWriteArrayList迭代器 set add remove操作不支持
+    //迭代的是快照信息
     static final class COWIterator<E> implements ListIterator<E> {
         /** Snapshot of the array */
         private final Object[] snapshot;
@@ -1222,6 +1247,7 @@ public class CopyOnWriteArrayList<E>
      * @return a view of the specified range within this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
+    //子list,传入this,子list的修改会作用到this list
     public List<E> subList(int fromIndex, int toIndex) {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -1270,6 +1296,7 @@ public class CopyOnWriteArrayList<E>
         }
 
         // only call this holding l's lock
+        //检查并发修改
         private void checkForComodification() {
             if (l.getArray() != expectedArray)
                 throw new ConcurrentModificationException();
