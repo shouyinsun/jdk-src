@@ -145,6 +145,7 @@ public class AtomicBoolean implements java.io.Serializable {
      * @param newValue the new value
      * @return the previous value
      */
+    //一直循环
     public final boolean getAndSet(boolean newValue) {
         boolean prev;
         do {

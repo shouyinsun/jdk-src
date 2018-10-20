@@ -44,6 +44,19 @@ import java.util.concurrent.ThreadLocalRandom;
  * extends Number so that concrete subclasses must publicly do so.
  */
 @SuppressWarnings("serial")
+
+/****
+ * 64bit  long 跟 double
+ *
+ * Striped64的设计思路是在竞争激烈的时候尽量分散竞争,
+ * 在实现上,Striped64维护了一个base Count和一个Cell数组,计数线程会首先试图更新base变量,
+ * 如果成功则退出计数,否则会认为当前竞争是很激烈的,那么就会通过Cell数组来分散计数,
+ * Striped64根据线程来计算哈希,然后将不同的线程分散到不同的Cell数组的index上,
+ * 然后这个线程的计数内容就会保存在该Cell的位置上面,基于这种设计,
+ * 最后的总计数需要结合base以及散落在Cell数组中的计数内容。
+ * 这种设计思路类似于java7的ConcurrentHashMap实现,也就是所谓的分段锁算法
+ 
+ */
 abstract class Striped64 extends Number {
     /*
      * This class maintains a lazily-initialized table of atomically
