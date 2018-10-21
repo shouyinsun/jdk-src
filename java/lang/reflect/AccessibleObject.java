@@ -54,6 +54,11 @@ import java.lang.annotation.Annotation;
  *
  * @since 1.2
  */
+
+/***
+ *
+ AccessibleObject 类是 Field、Method 和 Constructor 对象的基类
+ */
 public class AccessibleObject implements AnnotatedElement {
 
     /**

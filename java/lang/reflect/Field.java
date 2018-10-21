@@ -59,6 +59,12 @@ import sun.reflect.annotation.TypeAnnotationParser;
  * @author Kenneth Russell
  * @author Nakul Saraiya
  */
+
+
+/***
+ * field 字段
+ *
+ */
 public final
 class Field extends AccessibleObject implements Member {
 
@@ -214,6 +220,8 @@ class Field extends AccessibleObject implements Member {
      * @return a {@code Class} object identifying the declared
      * type of the field represented by this object
      */
+
+    //type
     public Class<?> getType() {
         return type;
     }
@@ -242,6 +250,8 @@ class Field extends AccessibleObject implements Member {
      *     that cannot be instantiated for any reason
      * @since 1.5
      */
+
+    //泛型
     public Type getGenericType() {
         if (getGenericSignature() != null)
             return getGenericInfo().getGenericType();
@@ -379,6 +389,10 @@ class Field extends AccessibleObject implements Member {
      *              and the field is an instance field.
      * @exception ExceptionInInitializerError if the initialization provoked
      *              by this method fails.
+     */
+
+    /***
+     *对于静态属性 obj传null
      */
     @CallerSensitive
     public Object get(Object obj)
@@ -750,6 +764,10 @@ class Field extends AccessibleObject implements Member {
      *              and the field is an instance field.
      * @exception ExceptionInInitializerError if the initialization provoked
      *              by this method fails.
+     */
+
+    /***
+     *对于静态属性 obj传null
      */
     @CallerSensitive
     public void set(Object obj, Object value)
