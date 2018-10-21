@@ -1552,7 +1552,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field[] getFields() throws SecurityException {//公有字段
+    public Field[] getFields() throws SecurityException {//公有字段 包含父类
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyFields(privateGetPublicFields(null));
     }
@@ -1610,7 +1610,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Method[] getMethods() throws SecurityException {//公有方法
+    public Method[] getMethods() throws SecurityException {//公有方法,包含父类
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyMethods(privateGetPublicMethods());
     }
@@ -1911,7 +1911,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field[] getDeclaredFields() throws SecurityException {//所有的字段,各种访问权限的
+    public Field[] getDeclaredFields() throws SecurityException {//所有的字段,各种访问权限的,但是不包括父类的申明字段
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyFields(privateGetDeclaredFields(false));
     }

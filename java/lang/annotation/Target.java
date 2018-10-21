@@ -73,6 +73,10 @@ package java.lang.annotation;
  * @jls 9.6.4.1 @Target
  * @jls 9.7.4 Where Annotations May Appear
  */
+
+/***
+ * 标识注解的使用范围,可以赋值为ElementType类型
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)

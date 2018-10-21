@@ -480,6 +480,11 @@ public final class Method extends Executable {
      * @exception ExceptionInInitializerError if the initialization
      * provoked by this method fails.
      */
+
+    /***
+     *
+     静态方法,obj 为null,如果类没有进行初始化,这里会先初始化
+     */
     @CallerSensitive
     public Object invoke(Object obj, Object... args)
         throws IllegalAccessException, IllegalArgumentException,

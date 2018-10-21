@@ -36,6 +36,10 @@ package java.lang.annotation;
  * @jls 9.6 Annotation Types
  * @jls 9.7 Annotations
  */
+
+/***
+ * @Repeatable 注解表明标记的注解可以多次应用于相同的声明或类型使用
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
