@@ -355,6 +355,7 @@ public interface Condition {
      * @throws InterruptedException if the current thread is interrupted
      *         (and interruption of thread suspension is supported)
      */
+    //返回等待剩余纳秒数
     long awaitNanos(long nanosTimeout) throws InterruptedException;
 
     /**

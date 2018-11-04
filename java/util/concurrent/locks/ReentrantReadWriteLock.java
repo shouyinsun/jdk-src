@@ -212,6 +212,12 @@ import java.util.Collection;
  * @since 1.5
  * @author Doug Lea
  */
+
+/***
+ * 可重入的读写锁
+ * 可以实现多个线程同时读，此时，写线程会被阻塞。
+ * 并且,写线程获取写入锁后可以获取读取锁,然后释放写入锁,这样写入锁变成了读取锁
+ */
 public class ReentrantReadWriteLock
         implements ReadWriteLock, java.io.Serializable {
     private static final long serialVersionUID = -6992448646407690164L;
@@ -259,6 +265,7 @@ public class ReentrantReadWriteLock
          * and the upper the shared (reader) hold count.
          */
 
+        //volatile 的stete 高16位为读锁,低16位为写锁
         static final int SHARED_SHIFT   = 16;
         static final int SHARED_UNIT    = (1 << SHARED_SHIFT);
         static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
@@ -273,9 +280,13 @@ public class ReentrantReadWriteLock
          * A counter for per-thread read hold counts.
          * Maintained as a ThreadLocal; cached in cachedHoldCounter
          */
+
+        // 计数器
         static final class HoldCounter {
+            // 计数  某个读线程重入的次数
             int count = 0;
             // Use id, not reference, to avoid garbage retention
+            // 获取当前线程的TID 线程id
             final long tid = getThreadId(Thread.currentThread());
         }
 
@@ -283,8 +294,11 @@ public class ReentrantReadWriteLock
          * ThreadLocal subclass. Easiest to explicitly define for sake
          * of deserialization mechanics.
          */
+        // 本地线程计数器
         static final class ThreadLocalHoldCounter
             extends ThreadLocal<HoldCounter> {
+            //ThreadLocalHoldCounter重写了initialValue方法
+            //在没有进行set的情况下 get到的均是initialValue方法里面生成的那个HolderCounter对象
             public HoldCounter initialValue() {
                 return new HoldCounter();
             }
@@ -311,6 +325,7 @@ public class ReentrantReadWriteLock
          * <p>Accessed via a benign data race; relies on the memory
          * model's final field and out-of-thin-air guarantees.
          */
+        // 缓存的计数器 一般释放的就是最后一个获取的
         private transient HoldCounter cachedHoldCounter;
 
         /**
@@ -331,7 +346,9 @@ public class ReentrantReadWriteLock
          * <p>This allows tracking of read holds for uncontended read
          * locks to be very cheap.
          */
+        // 第一个读线程
         private transient Thread firstReader = null;
+        // 第一个读线程的计数
         private transient int firstReaderHoldCount;
 
         Sync() {
@@ -409,6 +426,7 @@ public class ReentrantReadWriteLock
             return true;
         }
 
+        //读锁线程释放锁
         protected final boolean tryReleaseShared(int unused) {
             Thread current = Thread.currentThread();
             if (firstReader == current) {
@@ -417,12 +435,14 @@ public class ReentrantReadWriteLock
                     firstReader = null;
                 else
                     firstReaderHoldCount--;
-            } else {
+            } else { // 当前线程不为第一个读线程
+                // 获取缓存的计数器
                 HoldCounter rh = cachedHoldCounter;
+                // 计数器为空或者计数器的tid不为当前正在运行的线程的tid 获取当前线程对应的计数器
                 if (rh == null || rh.tid != getThreadId(current))
                     rh = readHolds.get();
                 int count = rh.count;
-                if (count <= 1) {
+                if (count <= 1) {// 计数小于等于1,移除
                     readHolds.remove();
                     if (count <= 0)
                         throw unmatchedUnlockException();
@@ -431,7 +451,7 @@ public class ReentrantReadWriteLock
             }
             for (;;) {
                 int c = getState();
-                int nextc = c - SHARED_UNIT;
+                int nextc = c - SHARED_UNIT;//高16位 减一操作
                 if (compareAndSetState(c, nextc))
                     // Releasing the read lock has no effect on readers,
                     // but it may allow waiting writers to proceed if
@@ -445,6 +465,8 @@ public class ReentrantReadWriteLock
                 "attempt to unlock read lock, not locked by current thread");
         }
 
+
+        // 共享模式下获取资源
         protected final int tryAcquireShared(int unused) {
             /*
              * Walkthrough:
@@ -469,15 +491,16 @@ public class ReentrantReadWriteLock
             int r = sharedCount(c);
             if (!readerShouldBlock() &&
                 r < MAX_COUNT &&
-                compareAndSetState(c, c + SHARED_UNIT)) {
+                compareAndSetState(c, c + SHARED_UNIT)) {// 读线程是否应该被阻塞、并且小于最大值、并且比较设置成功
                 if (r == 0) {
                     firstReader = current;
                     firstReaderHoldCount = 1;
                 } else if (firstReader == current) {
                     firstReaderHoldCount++;
-                } else {
+                } else { // 读锁数量不为0并且不为当前线程
                     HoldCounter rh = cachedHoldCounter;
-                    if (rh == null || rh.tid != getThreadId(current))
+                    if (rh == null || rh.tid != getThreadId(current))// 计数器为空或者计数器的tid不为当前正在运行的线程的
+                        //当前线程设置cache
                         cachedHoldCounter = rh = readHolds.get();
                     else if (rh.count == 0)
                         readHolds.set(rh);
@@ -492,6 +515,9 @@ public class ReentrantReadWriteLock
          * Full version of acquire for reads, that handles CAS misses
          * and reentrant reads not dealt with in tryAcquireShared.
          */
+
+        //在tryAcquireShared函数中,如果下列三个条件不满足（读线程是否应该被阻塞、小于最大值、比较设置成功）
+        // 则会进行fullTryAcquireShared函数中,它用来保证相关操作可以成功
         final int fullTryAcquireShared(Thread current) {
             /*
              * This code is in part redundant with that in
@@ -1495,6 +1521,7 @@ public class ReentrantReadWriteLock
 
     // Unsafe mechanics
     private static final sun.misc.Unsafe UNSAFE;
+    // 线程ID的偏移地址
     private static final long TID_OFFSET;
     static {
         try {

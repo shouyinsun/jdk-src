@@ -113,6 +113,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * into fair and nonfair versions below. Uses AQS state to
      * represent the number of holds on the lock.
      */
+    //Sync 继承 AQS
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = -5179523762034025860L;
 
@@ -126,7 +127,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * Performs non-fair tryLock.  tryAcquire is implemented in
          * subclasses, but both need nonfair try for trylock method.
          */
-        final boolean nonfairTryAcquire(int acquires) {
+        final boolean nonfairTryAcquire(int acquires) {//非公平的获取,有机会不排队,拿到锁
             final Thread current = Thread.currentThread();
             int c = getState();
             if (c == 0) {
@@ -135,7 +136,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
                     return true;
                 }
             }
-            else if (current == getExclusiveOwnerThread()) {
+            else if (current == getExclusiveOwnerThread()) {//重入
                 int nextc = c + acquires;
                 if (nextc < 0) // overflow
                     throw new Error("Maximum lock count exceeded");
@@ -164,7 +165,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             return getExclusiveOwnerThread() == Thread.currentThread();
         }
 
-        final ConditionObject newCondition() {
+        final ConditionObject newCondition() {//new Condition
             return new ConditionObject();
         }
 
@@ -195,7 +196,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     /**
      * Sync object for non-fair locks
      */
-    static final class NonfairSync extends Sync {
+    static final class NonfairSync extends Sync {//非公平锁
         private static final long serialVersionUID = 7316153563782823691L;
 
         /**
@@ -203,10 +204,10 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * acquire on failure.
          */
         final void lock() {
-            if (compareAndSetState(0, 1))
+            if (compareAndSetState(0, 1))//非公平锁,开始时会尝试获取锁
                 setExclusiveOwnerThread(Thread.currentThread());
             else
-                acquire(1);
+                acquire(1);//获取
         }
 
         protected final boolean tryAcquire(int acquires) {
@@ -217,7 +218,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     /**
      * Sync object for fair locks
      */
-    static final class FairSync extends Sync {
+    static final class FairSync extends Sync {//公平锁
         private static final long serialVersionUID = -3000897897090466540L;
 
         final void lock() {
@@ -232,13 +233,13 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             final Thread current = Thread.currentThread();
             int c = getState();
             if (c == 0) {
-                if (!hasQueuedPredecessors() &&
+                if (!hasQueuedPredecessors() && //是否有在排队
                     compareAndSetState(0, acquires)) {
                     setExclusiveOwnerThread(current);
                     return true;
                 }
             }
-            else if (current == getExclusiveOwnerThread()) {
+            else if (current == getExclusiveOwnerThread()) {//重入
                 int nextc = c + acquires;
                 if (nextc < 0)
                     throw new Error("Maximum lock count exceeded");
@@ -253,6 +254,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * Creates an instance of {@code ReentrantLock}.
      * This is equivalent to using {@code ReentrantLock(false)}.
      */
+    //重入锁 默认非公平
     public ReentrantLock() {
         sync = new NonfairSync();
     }
