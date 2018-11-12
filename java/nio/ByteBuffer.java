@@ -259,6 +259,9 @@ package java.nio;
  * @since 1.4
  */
 
+/***
+ * nio 中的 byte 缓冲区
+ */
 public abstract class ByteBuffer
     extends Buffer
     implements Comparable<ByteBuffer>
@@ -307,6 +310,12 @@ public abstract class ByteBuffer
      * @throws  IllegalArgumentException
      *          If the <tt>capacity</tt> is a negative integer
      */
+
+    /***
+     *allocateDirect分配一个DirectByteBuffer,这个缓冲区是使用堆外内存的
+     新分配的内存position都是0,limit为容量,初始内部填充的数据都为0
+     *
+     */
     public static ByteBuffer allocateDirect(int capacity) {
         return new DirectByteBuffer(capacity);
     }
@@ -328,6 +337,12 @@ public abstract class ByteBuffer
      *
      * @throws  IllegalArgumentException
      *          If the <tt>capacity</tt> is a negative integer
+     */
+
+    /****
+     *
+     allocate在JVM堆上分配一块内存。
+     新分配的内存position都是0,limit为容量,初始内部填充的数据都为0
      */
     public static ByteBuffer allocate(int capacity) {
         if (capacity < 0)
@@ -397,97 +412,9 @@ public abstract class ByteBuffer
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * 创建ByteBuffer,但是它只是个视图,拥有自己的position、limit等属性,但是存储的byte数组是共享的
+     */
 
     /**
      * Creates a new byte buffer whose content is a shared subsequence of
@@ -506,6 +433,12 @@ public abstract class ByteBuffer
      *
      * @return  The new byte buffer
      */
+
+    /***
+     * 创建一个的ByteBuffer
+     * 内容是当前ByteBuffer的一个子序列，共享一个byte数组；两个ByteBuffer的position、limit、mark是独立的
+     * 新ByteBuffer的起始位置是原ByteBuffer的position位置
+     */
     public abstract ByteBuffer slice();
 
     /**
@@ -522,6 +455,12 @@ public abstract class ByteBuffer
      * only if, this buffer is read-only.  </p>
      *
      * @return  The new byte buffer
+     */
+
+    /***
+     *
+     * 复制 一个ByteBuffer
+     * 共享存储的byte数据,拥有独立的capacity、limit、position、mark属性
      */
     public abstract ByteBuffer duplicate();
 
@@ -1054,6 +993,11 @@ public abstract class ByteBuffer
      *   while (in.read(buf) >= 0 || buf.position != 0) {
      *       buf.flip();
      *       out.write(buf);
+     *       //非阻塞的写,write操作并不能一次将buffer中的数据全部写入到指定的 channel中去,没有写完,会被覆盖
+     *
+     *       //执行 buffer.compact()将没有发出的数据复制到 buffer的开始位置
+     *       //posittion = limit-position,limit = capacity,
+     *       //样在下一次read(buffer)的时候，数据就会继续添加到缓冲的后面了
      *       buf.compact();    // In case of partial write
      *   }
      * }</pre></blockquote>
@@ -1064,6 +1008,11 @@ public abstract class ByteBuffer
      *
      * @throws  ReadOnlyBufferException
      *          If this buffer is read-only
+     */
+    /***
+     * compact  将 position 与 limit之间的数据复制到buffer的开始位置
+     * 复制后 position  = limit -position,limit = capacity
+     *
      */
     public abstract ByteBuffer compact();
 

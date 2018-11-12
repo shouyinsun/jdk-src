@@ -172,6 +172,21 @@ import java.util.Spliterator;
  * @since 1.4
  */
 
+
+/***
+ * Buffer是一种特定原始类型元素的线性的有限序列集合
+ * 其核心的属性有mark、capacity、limit、Position
+ *
+ * mark <= position <= limit <= capacity
+ *
+ *
+ * capacity：Buffer的容量，表示可以容纳的元素数量
+
+ limit：表示第一个不可以被读取或者写入的元素的位置
+
+ position：表示下一个被读取或者写入的位置
+
+ */
 public abstract class Buffer {
 
     /**
@@ -284,6 +299,14 @@ public abstract class Buffer {
      *
      * @return  This buffer
      */
+
+    /***
+     *
+     * 校验mark参数必须小于position。
+     * 这个参数非常简单,用于标记position的当前位置
+     * 在进行读取写入之类的操作之后可以通过API重新将position重置到标记的位置,
+     * 对应的API为：Buffer#mark()\Buffer#reset()
+     */
     public final Buffer mark() {
         mark = position;
         return this;
@@ -353,6 +376,8 @@ public abstract class Buffer {
      *
      * @return  This buffer
      */
+    //flip 翻转  读->写  或    写->读
+    //将limit设置到position位置,position调整到0,mark设置为-1
     public final Buffer flip() {
         limit = position;
         position = 0;
@@ -375,6 +400,7 @@ public abstract class Buffer {
      *
      * @return  This buffer
      */
+    //rewind 倒带 position回到0
     public final Buffer rewind() {
         position = 0;
         mark = -1;
@@ -387,6 +413,7 @@ public abstract class Buffer {
      *
      * @return  The number of elements remaining in this buffer
      */
+    //剩余的count
     public final int remaining() {
         return limit - position;
     }

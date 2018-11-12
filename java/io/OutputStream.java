@@ -43,6 +43,7 @@ package java.io;
  * @see     java.io.OutputStream#write(int)
  * @since   JDK1.0
  */
+//字节输出流
 public abstract class OutputStream implements Closeable, Flushable {
     /**
      * Writes the specified byte to this output stream. The general

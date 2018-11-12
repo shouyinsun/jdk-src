@@ -231,6 +231,7 @@ public class File
      *
      * @see     java.lang.System#getProperty(java.lang.String)
      */
+    //linux 系统中path分割符是:,windows系统下是;
     public static final char pathSeparatorChar = fs.getPathSeparator();
 
     /**
