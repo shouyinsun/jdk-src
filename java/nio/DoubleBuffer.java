@@ -259,6 +259,9 @@ package java.nio;
  * @since 1.4
  */
 
+/***
+ * nio double的缓冲区
+ */
 public abstract class DoubleBuffer
     extends Buffer
     implements Comparable<DoubleBuffer>
@@ -268,6 +271,8 @@ public abstract class DoubleBuffer
     // reduce the number of virtual method invocations needed to access these
     // values, which is especially costly when coding small buffers.
     //
+    //heap buffer
+    //堆buffer
     final double[] hb;                  // Non-null only for heap buffers
     final int offset;
     boolean isReadOnly;                 // Valid only for heap buffers

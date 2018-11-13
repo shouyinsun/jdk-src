@@ -259,6 +259,9 @@ import java.util.stream.IntStream;
  * @since 1.4
  */
 
+/***
+ * nio 字符缓冲
+ */
 public abstract class CharBuffer
     extends Buffer
     implements Comparable<CharBuffer>, Appendable, CharSequence, Readable
@@ -268,8 +271,11 @@ public abstract class CharBuffer
     // reduce the number of virtual method invocations needed to access these
     // values, which is especially costly when coding small buffers.
     //
+    //hb -> heap buffer
+    //堆buffer
     final char[] hb;                  // Non-null only for heap buffers
     final int offset;
+    //堆buffer 是 readOnly
     boolean isReadOnly;                 // Valid only for heap buffers
 
     // Creates a new buffer with the given mark, position, limit, capacity,

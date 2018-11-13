@@ -259,6 +259,10 @@ package java.nio;
  * @since 1.4
  */
 
+
+/***
+ * nio long 缓冲
+ */
 public abstract class LongBuffer
     extends Buffer
     implements Comparable<LongBuffer>

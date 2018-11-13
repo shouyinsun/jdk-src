@@ -259,6 +259,9 @@ package java.nio;
  * @since 1.4
  */
 
+/***
+ * nio int 缓冲区
+ */
 public abstract class IntBuffer
     extends Buffer
     implements Comparable<IntBuffer>

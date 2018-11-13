@@ -259,6 +259,10 @@ package java.nio;
  * @since 1.4
  */
 
+
+/***
+ * nio short 缓冲
+ */
 public abstract class ShortBuffer
     extends Buffer
     implements Comparable<ShortBuffer>

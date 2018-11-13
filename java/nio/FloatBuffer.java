@@ -259,6 +259,11 @@ package java.nio;
  * @since 1.4
  */
 
+
+/***
+ * nio float 缓冲区
+ *
+ */
 public abstract class FloatBuffer
     extends Buffer
     implements Comparable<FloatBuffer>

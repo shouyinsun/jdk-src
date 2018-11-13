@@ -130,6 +130,7 @@ class DirectByteBuffer
             throw x;
         }
         unsafe.setMemory(base, size, (byte) 0);
+        //堆外buffer,维护address信息
         if (pa && (base % ps != 0)) {
             // Round up to page boundary
             address = base + ps - (base & (ps - 1));
