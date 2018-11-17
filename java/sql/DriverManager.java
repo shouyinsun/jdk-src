@@ -78,6 +78,11 @@ import sun.reflect.Reflection;
  * @see Driver
  * @see Connection
  */
+
+/***
+ * driverManager 管理多种driver
+ * 根据url自动匹配合适的driver,并获取connection
+ */
 public class DriverManager {
 
 
@@ -200,6 +205,14 @@ public class DriverManager {
      * timeout value specified by the {@code setLoginTimeout} method
      * has been exceeded and has at least tried to cancel the
      * current database connection attempt
+     */
+
+    /***
+     * 9
+     * @param url
+     * @param info
+     * @return
+     * @throws SQLException
      */
     @CallerSensitive
     public static Connection getConnection(String url,
@@ -580,6 +593,7 @@ public class DriverManager {
         // exposed as a java.sql.Driver.class service.
         // ServiceLoader.load() replaces the sun.misc.Providers()
 
+        //SPI 加载Driver类
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
 
@@ -619,6 +633,7 @@ public class DriverManager {
         for (String aDriver : driversList) {
             try {
                 println("DriverManager.Initialize: loading " + aDriver);
+                //Class.forName 加载类
                 Class.forName(aDriver, true,
                         ClassLoader.getSystemClassLoader());
             } catch (Exception ex) {

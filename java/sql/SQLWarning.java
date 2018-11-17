@@ -42,6 +42,7 @@ package java.sql;
  * @see Statement#getWarnings
  * @see ResultSet#getWarnings
  */
+//继承SQLException 链式  存在next
 public class SQLWarning extends SQLException {
 
     /**

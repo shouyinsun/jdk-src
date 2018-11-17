@@ -83,6 +83,33 @@ import java.util.concurrent.Executor;
  */
 public interface Connection  extends Wrapper, AutoCloseable {
 
+    /***
+     * Statement 跟  PreparedStatement 的result set
+     * 默认是 TYPE_FORWARD_ONLY 跟 CONCUR_READ_ONLY的并发级别
+     *
+     *
+     * 
+     * Statement stmt=con.createStatement(int type,int concurrency);
+     * 访问数据库的时候,在读取返回结果的时候,可能要前后移动指针,比如我们先计算有多少条信息,
+     * 就需要把指针移到最后来计算,然后再把指针移到最前面,逐条读取,有时只需要逐条读取就可以了。
+     * 还有就是有只我们只需要读取数据,为了不破坏数据,我们可采用只读模式,
+     * 有时我们需要望数据库里添加记录,这是我们就要采用可更新数据库的模式
+     * 
+     * 
+     参数 int type：
+     ResultSet.TYPE_FORWORD_ONLY 结果集的游标只能向下滚动
+
+     ResultSet.TYPE_SCROLL_INSENSITIVE 结果集的游标可以上下移动,当数据库变化时,当前结果集不变
+
+     ResultSet.TYPE_SCROLL_SENSITIVE 返回可滚动的结果集,当数据库变化时,当前结果集同步改变
+
+     参数 int concurrency：
+     ResultSet.CONCUR_READ_ONLY 不能用结果集更新数据库中的表。
+
+     ResultSet.CONCUR_UPDATETABLE 能用结果集更新数据库中的表。
+     *
+     */
+
     /**
      * Creates a <code>Statement</code> object for sending
      * SQL statements to the database.
@@ -168,6 +195,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @exception SQLException if a database access error occurs
      * or this method is called on a closed connection
      */
+    //调用存储过程的 CallableStatement
     CallableStatement prepareCall(String sql) throws SQLException;
 
     /**
@@ -219,6 +247,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * or this method is called on a closed connection
      * @see #getAutoCommit
      */
+    //connection's auto-commit 默认 true
     void setAutoCommit(boolean autoCommit) throws SQLException;
 
     /**
@@ -296,6 +325,8 @@ public interface Connection  extends Wrapper, AutoCloseable {
      *         is closed; <code>false</code> if it is still open
      * @exception SQLException if a database access error occurs
      */
+    //是否调用close方法
+    //不用来判断连接是否有效,一般由客户端通过异常判断是否有效
     boolean isClosed() throws SQLException;
 
     //======================================================================
@@ -314,6 +345,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @exception  SQLException if a database access error occurs
      * or this method is called on a closed connection
      */
+    //元数据:表、存储过程、语法...
     DatabaseMetaData getMetaData() throws SQLException;
 
     /**
@@ -377,6 +409,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
     /**
      * A constant indicating that transactions are not supported.
      */
+    //没有事务
     int TRANSACTION_NONE             = 0;
 
     /**
@@ -387,6 +420,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * committed (a "dirty read").  If any of the changes are rolled back,
      * the second transaction will have retrieved an invalid row.
      */
+    //可读未提交  存在脏读、不可重复读、幻读
     int TRANSACTION_READ_UNCOMMITTED = 1;
 
     /**
@@ -395,6 +429,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * reads can occur.  This level only prohibits a transaction
      * from reading a row with uncommitted changes in it.
      */
+    //可读提交 存在不可重复读、幻读
     int TRANSACTION_READ_COMMITTED   = 2;
 
     /**
@@ -407,6 +442,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * rereads the row, getting different values the second time
      * (a "non-repeatable read").
      */
+    //可重读 存在幻读
     int TRANSACTION_REPEATABLE_READ  = 4;
 
     /**
@@ -420,6 +456,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * rereads for the same condition, retrieving the additional
      * "phantom" row in the second read.
      */
+    //串行
     int TRANSACTION_SERIALIZABLE     = 8;
 
     /**
@@ -445,6 +482,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @see DatabaseMetaData#supportsTransactionIsolationLevel
      * @see #getTransactionIsolation
      */
+    //事务的隔离级别
     void setTransactionIsolation(int level) throws SQLException;
 
     /**
@@ -529,6 +567,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * set type and result set concurrency.
      * @since 1.2
      */
+    //createStatement 指定resultSet的类型与并发级别
     Statement createStatement(int resultSetType, int resultSetConcurrency)
         throws SQLException;
 
@@ -678,6 +717,16 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @see ResultSet
      * @since 1.4
      */
+    //可保持性
+
+    /***
+     * 
+     * 可保持性就是指当ResultSet的结果被提交时,是被关闭还是不被关闭。
+     * JDBC2.0和1.0提供的都是提交后ResultSet就会被关闭。不过在JDBC3.0中,我们可以设置ResultSet是否关闭。
+     resultSetHoldability表示在结果集提交后结果集是否打开,取值有两个：
+     ResultSet.HOLD_CURSORS_OVER_COMMIT:表示修改提交时,不关闭数据库。
+     ResultSet.CLOSE_CURSORS_AT_COMMIT：表示修改提交时ResultSet关闭
+     */
     void setHoldability(int holdability) throws SQLException;
 
     /**
@@ -735,6 +784,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @see Savepoint
      * @since 1.4
      */
+    //保存点
     Savepoint setSavepoint(String name) throws SQLException;
 
     /**
@@ -756,6 +806,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @see #rollback
      * @since 1.4
      */
+    //回滚到保存点
     void rollback(Savepoint savepoint) throws SQLException;
 
     /**
@@ -808,6 +859,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * @see ResultSet
      * @since 1.4
      */
+    //指定resultSetType、resultSetConcurrency,resultSetHoldability
     Statement createStatement(int resultSetType, int resultSetConcurrency,
                               int resultSetHoldability) throws SQLException;
 
@@ -937,6 +989,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      * this method with a constant of Statement.RETURN_GENERATED_KEYS
      * @since 1.4
      */
+    //Statement.RETURN_GENERATED_KEYS 跟 Statement.NO_GENERATED_KEYS
     PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
         throws SQLException;
 
@@ -1050,6 +1103,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      *
      * @since 1.6
      */
+    //clob Character Large Object 字符大对象
     Clob createClob() throws SQLException;
 
     /**
@@ -1066,6 +1120,7 @@ public interface Connection  extends Wrapper, AutoCloseable {
      *
      * @since 1.6
      */
+    //binary large object 二进制大对象
     Blob createBlob() throws SQLException;
 
     /**
