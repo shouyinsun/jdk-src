@@ -145,6 +145,10 @@ import java.io.InputStream;
  * @see ResultSetMetaData
  */
 
+
+/***
+ * ResultSet 结果集
+ */
 public interface ResultSet extends Wrapper, AutoCloseable {
 
     /**
@@ -233,6 +237,11 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * @exception SQLException if the columnIndex is not valid;
      * if a database access error occurs or this method is
      *            called on a closed result set
+     */
+
+    /***
+     *
+     * getXX 获取当前行某一列的值, 第一列是1 第二列是2
      */
     String getString(int columnIndex) throws SQLException;
 
@@ -522,6 +531,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * if a database access error occurs or this method is
      *            called on a closed result set
      */
+    //根据别名/列名 获取value值
     String getString(String columnLabel) throws SQLException;
 
     /**
@@ -1174,6 +1184,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * this method
      * @since 1.2
      */
+    //获得行号,第一行是1 第二行是2
     int getRow() throws SQLException;
 
     /**
@@ -1365,6 +1376,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * @since 1.2
      * @see #setFetchSize
      */
+    //获取的size
     int getFetchSize() throws SQLException;
 
     /**
@@ -1372,6 +1384,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * whose cursor may move only forward.
      * @since 1.2
      */
+    //游标 只能向前 next
     int TYPE_FORWARD_ONLY = 1003;
 
     /**
@@ -1380,6 +1393,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * that underlies the <code>ResultSet</code>.
      * @since 1.2
      */
+    //游标可以滚动,更新的数据不同步
     int TYPE_SCROLL_INSENSITIVE = 1004;
 
     /**
@@ -1388,6 +1402,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * that underlies the <code>ResultSet</code>.
      * @since 1.2
      */
+    //游标可以滚动,更新的数据同步
     int TYPE_SCROLL_SENSITIVE = 1005;
 
     /**
@@ -1402,6 +1417,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * or this method is called on a closed result set
      * @since 1.2
      */
+    //获取resultSet的类型
     int getType() throws SQLException;
 
     /**
@@ -1409,6 +1425,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * <code>ResultSet</code> object that may NOT be updated.
      * @since 1.2
      */
+    //并发级别 只读
     int CONCUR_READ_ONLY = 1007;
 
     /**
@@ -1416,6 +1433,7 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * <code>ResultSet</code> object that may be updated.
      * @since 1.2
      */
+    //并发级别 可更新
     int CONCUR_UPDATABLE = 1008;
 
     /**
