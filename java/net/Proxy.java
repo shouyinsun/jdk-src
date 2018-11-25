@@ -35,6 +35,12 @@ package java.net;
  * @author Jean-Christophe Collet
  * @since   1.5
  */
+
+/***
+ * 代理设置
+ *
+ * DIRECT、HTTP、SOCKS
+ */
 public class Proxy {
 
     /**
@@ -50,10 +56,12 @@ public class Proxy {
         /**
          * Represents proxy for high level protocols such as HTTP or FTP.
          */
+        //http、ftp协议的代理
         HTTP,
         /**
          * Represents a SOCKS (V4 or V5) proxy.
          */
+        //SOCK4/5代理协议 会对所有的连接进行代理,而不管用的是什么协议
         SOCKS
     };
 
