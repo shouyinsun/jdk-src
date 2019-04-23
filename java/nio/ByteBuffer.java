@@ -997,7 +997,7 @@ public abstract class ByteBuffer
      *
      *       //执行 buffer.compact()将没有发出的数据复制到 buffer的开始位置
      *       //posittion = limit-position,limit = capacity,
-     *       //样在下一次read(buffer)的时候，数据就会继续添加到缓冲的后面了
+     *       //在下一次read(buffer)的时候,数据就会继续添加到缓冲的后面了
      *       buf.compact();    // In case of partial write
      *   }
      * }</pre></blockquote>
