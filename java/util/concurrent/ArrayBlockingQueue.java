@@ -79,6 +79,13 @@ import java.util.Spliterator;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
+
+
+/*****
+ * ArrayBlockingQueue,数组实现的有界的阻塞队列,put 跟 take 会阻塞
+ *
+ *notEmpty,notFull 两个condition
+ */
 public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         implements BlockingQueue<E>, java.io.Serializable {
 

@@ -34,10 +34,11 @@
  */
 
 package java.util.concurrent;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.*;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * An unbounded {@linkplain BlockingQueue blocking queue} of
@@ -67,6 +68,16 @@ import java.util.*;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
+
+
+/**
+ * 无界的blockingQueue,线程安全
+ *
+ * 内部使用 priorityQueue,queue[0]是最小的
+ *
+ * take 时会阻塞到queue[0]到期,
+ * 期间如果 加入 的是最小的,queue[0]有变动,会唤醒阻塞线程,重新竞争
+ */
 public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
     implements BlockingQueue<E> {
 
@@ -89,6 +100,10 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
      * signalled.  So waiting threads must be prepared to acquire
      * and lose leadership while waiting.
      */
+
+    //leader线程用于减少多线程等待
+    // 只有一个线程,等待到下一次到期,然后获取queue[0],其他线程无限期等待,等待唤醒
+
     private Thread leader = null;
 
     /**
@@ -138,8 +153,9 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
         lock.lock();
         try {
             q.offer(e);
-            if (q.peek() == e) {
-                leader = null;
+            if (q.peek() == e) {//queue[0] == e,添加的是最小的
+                leader = null;//leader线程 设置null
+                //唤醒所有的等待take的线程,重新竞争
                 available.signal();
             }
             return true;
@@ -169,6 +185,9 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
      * @return {@code true}
      * @throws NullPointerException {@inheritDoc}
      */
+
+
+    //无界queue,不存在阻塞
     public boolean offer(E e, long timeout, TimeUnit unit) {
         return offer(e);
     }
@@ -180,7 +199,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
      * @return the head of this queue, or {@code null} if this
      *         queue has no elements with an expired delay
      */
-    public E poll() {
+    public E poll() {//queue[0],不存在或者还没过期,返回null
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -210,19 +229,23 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
                 if (first == null)
                     available.await();
                 else {
+                    //延迟时间
                     long delay = first.getDelay(NANOSECONDS);
                     if (delay <= 0)
                         return q.poll();
                     first = null; // don't retain ref while waiting
                     if (leader != null)
+                        //wait,等待signal
                         available.await();
                     else {
                         Thread thisThread = Thread.currentThread();
                         leader = thisThread;
                         try {
+                            //等待到期,然后当前线程尝试获取queue[0]
                             available.awaitNanos(delay);
                         } finally {
                             if (leader == thisThread)
+                                //leader 线程置空
                                 leader = null;
                         }
                     }
@@ -230,6 +253,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
             }
         } finally {
             if (leader == null && q.peek() != null)
+                //signal
                 available.signal();
             lock.unlock();
         }

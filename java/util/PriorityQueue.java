@@ -79,6 +79,26 @@ import java.util.function.Consumer;
  * @author Josh Bloch, Doug Lea
  * @param <E> the type of elements held in this collection
  */
+
+
+/***
+ * 带优先级的queue  非线程安全
+ * PriorityBlockingQueue 线程安全
+ * 数组,最小的是queue[0],无界的queue,会自动扩展
+ *
+ * 堆排序
+ * 二叉树
+ *
+ * 父节点的一定小于子节点,兄弟节点大小不确定
+ *
+ * index从0开始
+ *
+ *        n
+ *
+ *  2n+1     2(n+1)
+ *
+ */
+
 public class PriorityQueue<E> extends AbstractQueue<E>
     implements java.io.Serializable {
 
@@ -94,6 +114,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * heap and each descendant d of n, n <= d.  The element with the
      * lowest value is in queue[0], assuming the queue is nonempty.
      */
+
     transient Object[] queue; // non-private to simplify nested class access
 
     /**
@@ -272,6 +293,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      */
     private void initFromCollection(Collection<? extends E> c) {
         initElementsFromCollection(c);
+        //从 size>>>1 倒着跟 子节点比较,小的一直往前,保证最小的是queue[0]
         heapify();
     }
 
@@ -291,6 +313,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     private void grow(int minCapacity) {
         int oldCapacity = queue.length;
         // Double size if small; else grow by 50%
+        //小于64,double,否则增加50%
         int newCapacity = oldCapacity + ((oldCapacity < 64) ?
                                          (oldCapacity + 2) :
                                          (oldCapacity >> 1));
@@ -330,6 +353,13 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      *         according to the priority queue's ordering
      * @throws NullPointerException if the specified element is null
      */
+    /****
+     *
+     * offer,加在queue的最后,会从后一直往前跟parent比较,小的一直往前交换
+     *
+     * O(log(n))
+     *
+     */
     public boolean offer(E e) {
         if (e == null)
             throw new NullPointerException();
@@ -350,7 +380,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         return (size == 0) ? null : (E) queue[0];
     }
 
-    private int indexOf(Object o) {
+    private int indexOf(Object o) {//O(n)
         if (o != null) {
             for (int i = 0; i < size; i++)
                 if (o.equals(queue[i]))
@@ -387,7 +417,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param o element to be removed from this queue, if present
      * @return {@code true} if removed
      */
-    boolean removeEq(Object o) {
+    boolean removeEq(Object o) {// ==比较 移除
         for (int i = 0; i < size; i++) {
             if (o == queue[i]) {
                 removeAt(i);
@@ -588,10 +618,13 @@ public class PriorityQueue<E> extends AbstractQueue<E>
             return null;
         int s = --size;
         modCount++;
+        //移除第一个
         E result = (E) queue[0];
+        //最后一个
         E x = (E) queue[s];
+        //最后一个置为null
         queue[s] = null;
-        if (s != 0)
+        if (s != 0)//最小的移到queue[0],原来的queue[s]放到合适的位置
             siftDown(0, x);
         return result;
     }
@@ -640,7 +673,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param k the position to fill
      * @param x the item to insert
      */
-    private void siftUp(int k, E x) {
+    private void siftUp(int k, E x) {//最小的放最前面
         if (comparator != null)
             siftUpUsingComparator(k, x);
         else
@@ -663,8 +696,8 @@ public class PriorityQueue<E> extends AbstractQueue<E>
 
     @SuppressWarnings("unchecked")
     private void siftUpUsingComparator(int k, E x) {
-        while (k > 0) {
-            int parent = (k - 1) >>> 1;
+        while (k > 0) {//跟parent比较
+            int parent = (k - 1) >>> 1;//index从0开始    parent:i  children: 2i+1 与  2(i+1)
             Object e = queue[parent];
             if (comparator.compare(x, (E) e) >= 0)
                 break;
@@ -682,7 +715,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param k the position to fill
      * @param x the item to insert
      */
-    private void siftDown(int k, E x) {
+    private void siftDown(int k, E x) {//降档,最小的放最前面
         if (comparator != null)
             siftDownUsingComparator(k, x);
         else
@@ -712,14 +745,17 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     private void siftDownUsingComparator(int k, E x) {
         int half = size >>> 1;
         while (k < half) {
+            //index从0开始    parent:i  children: 2i+1 与  2(i+1)
             int child = (k << 1) + 1;
             Object c = queue[child];
             int right = child + 1;
             if (right < size &&
                 comparator.compare((E) c, (E) queue[right]) > 0)
+                //两个子节点中较小的
                 c = queue[child = right];
             if (comparator.compare(x, (E) c) <= 0)
                 break;
+            //x 大于子节点中较小的,交换位置
             queue[k] = c;
             k = child;
         }
