@@ -626,7 +626,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * Creates with given first task and thread from ThreadFactory.
          * @param firstTask the first task (null if none)
          */
-        Worker(Runnable firstTask) {
+        Worker(Runnable firstTask) {//worker
             setState(-1); // inhibit interrupts until runWorker
             this.firstTask = firstTask;
             this.thread = getThreadFactory().newThread(this);
@@ -930,10 +930,10 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     wc >= (core ? corePoolSize : maximumPoolSize))
                     return false;
                 if (compareAndIncrementWorkerCount(c))
-                    break retry;
+                    break retry;//增加了workCount,跳出最外层for循环
                 c = ctl.get();  // Re-read ctl
-                if (runStateOf(c) != rs)
-                    continue retry;
+                if (runStateOf(c) != rs)//前后状态不一致
+                    continue retry;//内部for循环重试
                 // else CAS failed due to workerCount change; retry inner loop
             }
         }
@@ -942,6 +942,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         boolean workerAdded = false;
         Worker w = null;
         try {
+            //new 一个 worker
             w = new Worker(firstTask);
             final Thread t = w.thread;
             if (t != null) {
@@ -967,6 +968,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     mainLock.unlock();
                 }
                 if (workerAdded) {
+                    //start worker的线程, worker的run方法,runWorker
                     t.start();
                     workerStarted = true;
                 }
@@ -1137,13 +1139,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      *
      * @param w the worker
      */
-    final void runWorker(Worker w) {
+    final void runWorker(Worker w) {// addWorker之后的runWorker会从queue获取任务并执行
         Thread wt = Thread.currentThread();
         Runnable task = w.firstTask;
         w.firstTask = null;
         w.unlock(); // allow interrupts
         boolean completedAbruptly = true;
         try {
+            //runWorker是一个while循环,执行 task 和从queue中获取task 执行
             while (task != null || (task = getTask()) != null) {
                 w.lock();
                 // If pool is stopping, ensure thread is interrupted;
@@ -1156,9 +1159,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     !wt.isInterrupted())
                     wt.interrupt();
                 try {
+                    //子类自定义
                     beforeExecute(wt, task);
                     Throwable thrown = null;
                     try {
+                        //调用thread run,同步执行
                         task.run();
                     } catch (RuntimeException x) {
                         thrown = x; throw x;
@@ -1167,9 +1172,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     } catch (Throwable x) {
                         thrown = x; throw new Error(x);
                     } finally {
+                        //子类自定义
                         afterExecute(task, thrown);
                     }
                 } finally {
+                    //task置null,从queue获取
                     task = null;
                     w.completedTasks++;
                     w.unlock();
