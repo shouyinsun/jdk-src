@@ -140,7 +140,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /****
  * CyclicBarrier是一个同步辅助类
- * 它允许一组线程互相等待，直到所有线程都到达某个公共屏障点(也可以叫同步点)
+ * 它允许一组线程互相等待,直到所有线程都到达某个公共屏障点(也可以叫同步点)
  * 即相互等待的线程都完成调用await方法 所有被屏障拦截的线程才会继续运行await方法后面的程序
  *
  * 存在一个 Generation 概念

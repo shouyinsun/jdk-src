@@ -215,7 +215,7 @@ import java.util.Collection;
 
 /***
  * 可重入的读写锁
- * 可以实现多个线程同时读，此时，写线程会被阻塞。
+ * 可以实现多个线程同时读,此时,写线程会被阻塞。
  * 并且,写线程获取写入锁后可以获取读取锁,然后释放写入锁,这样写入锁变成了读取锁
  */
 public class ReentrantReadWriteLock

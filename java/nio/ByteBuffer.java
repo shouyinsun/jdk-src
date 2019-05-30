@@ -436,7 +436,7 @@ public abstract class ByteBuffer
 
     /***
      * 创建一个的ByteBuffer
-     * 内容是当前ByteBuffer的一个子序列，共享一个byte数组；两个ByteBuffer的position、limit、mark是独立的
+     * 内容是当前ByteBuffer的一个子序列,共享一个byte数组；两个ByteBuffer的position、limit、mark是独立的
      * 新ByteBuffer的起始位置是原ByteBuffer的position位置
      */
     public abstract ByteBuffer slice();

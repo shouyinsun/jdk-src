@@ -82,7 +82,7 @@ import sun.security.action.GetPropertyAction;
 
 /***
  * 数字和字母保持不变,空格变为'+',
- * 其他（如：中文字符）先转换为十六进制表示，然后在每个字节前面加一个标识符%
+ * 其他（如：中文字符）先转换为十六进制表示,然后在每个字节前面加一个标识符%
  */
 public class URLEncoder {
     static BitSet dontNeedEncoding;

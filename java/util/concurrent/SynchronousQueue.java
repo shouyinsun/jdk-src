@@ -291,13 +291,14 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
             /**
              * Tries to cancel a wait by matching node to itself.
              */
+            //match 节点置为自身
             void tryCancel() {//取消过程就是将节点的item设置为自身
                 UNSAFE.compareAndSwapObject(this, matchOffset, null, this);
             }
 
             boolean isCancelled() {
                 return match == this;
-            }
+            }//match 节点是自身
 
             // Unsafe mechanics
             private static final sun.misc.Unsafe UNSAFE;
@@ -371,20 +372,20 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
 
             for (;;) {
                 SNode h = head;
-                // 栈为空或者当前节点模式与头节点模式一样，将节点压入栈内，等待匹配
+                // 栈为空或者当前节点模式与头节点模式一样,将节点压入栈内,等待匹配
                 if (h == null || h.mode == mode) {  // empty or same-mode
                     // 超时
                     if (timed && nanos <= 0) {      // can't wait
-                        // 节点被取消了，向前推进
+                        // 节点被取消了,向前推进
                         if (h != null && h.isCancelled())
                             //  重新设置头结点（弹出之前的头结点）
                             casHead(h, h.next);     // pop cancelled node
                         else
                             return null;
-                    } else if (casHead(h, s = snode(s, e, h, mode))) {
-                        // 生成一个SNode节点，并尝试替换掉头节点head (head -> s)
+                    } else if (casHead(h, s = snode(s, e, h, mode))) {//非公平
+                        // 生成一个SNode节点,并尝试替换掉头节点head (head -> s)
 
-                        // 自旋，等待线程匹配
+                        // 自旋,等待线程匹配
                         SNode m = awaitFulfill(s, timed, nanos);
 
                         // 返回的m == s 表示该节点被取消了或者超时、中断了
@@ -474,7 +475,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                 if (timed) {
                     nanos = deadline - System.nanoTime();
                     if (nanos <= 0L) {
-                        s.tryCancel();
+                        s.tryCancel();//match 设为自身,下次循环return
                         continue;
                     }
                 }
@@ -808,30 +809,31 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
          * @return matched item, or s if cancelled
          */
         /**
-         * 当队列为空时，节点入列然后通过调用awaitFulfill()方法自旋
-         * 该方法主要用于自旋/阻塞节点，直到节点被匹配返回或者取消、中断
+         * 当队列为空时,节点入列然后通过调用awaitFulfill()方法自旋
+         * 该方法主要用于自旋/阻塞节点,直到节点被匹配返回或者取消、中断
          * */
         Object awaitFulfill(QNode s, E e, boolean timed, long nanos) {
             /* Same idea as TransferStack.awaitFulfill */
             final long deadline = timed ? System.nanoTime() + nanos : 0L;
             Thread w = Thread.currentThread();
             // 自旋次数
-            // 如果节点Node恰好是head节点，则自旋一段时间，这里主要是为了效率问题如果里面阻塞，会存在唤醒、线程上下文切换的问题
-            // 如果生产者、消费者者里面到来的话，就避免了这个阻塞的过程
+            // 如果节点Node恰好是head节点,则自旋一段时间,
+            // 这里主要是为了效率问题如果里面阻塞,会存在唤醒、线程上下文切换的问题
+            // 如果生产者、消费者者里面到来的话,就避免了这个阻塞的过程
             int spins = ((head.next == s) ?
                          (timed ? maxTimedSpins : maxUntimedSpins) : 0);
             for (;;) {// 自旋
-                // 线程中断了，剔除当前节点
+                // 线程中断了,剔除当前节点
                 if (w.isInterrupted())
                     s.tryCancel(e);
                 Object x = s.item;
-                if (x != e) // 如果线程进行了阻塞 -> 唤醒或者中断了
-                    // 那么x != e 肯定成立，直接返回当前节点即可
+                if (x != e) // 如果线程进行了 阻塞 -> 唤醒或者中断了
+                    // 那么x != e 肯定成立,直接返回当前节点即可
                     return x;
                 if (timed) {
                     nanos = deadline - System.nanoTime();
                     if (nanos <= 0L) {
-                        s.tryCancel(e);
+                        s.tryCancel(e);//item置为 自身,下次循环 return
                         continue;
                     }
                 }
@@ -863,20 +865,20 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
             while (pred.next == s) { // Return early if already unlinked
                 QNode h = head;
                 QNode hn = h.next;   // Absorb cancelled first node as head
-                // hn节点被取消了，向前推进
+                // hn节点被取消了,向前推进
                 if (hn != null && hn.isCancelled()) {
                     advanceHead(h, hn);
                     continue;
                 }
-                // 队列为空，直接return null
+                // 队列为空,直接return null
                 QNode t = tail;      // Ensure consistent read for tail
                 if (t == h)
                     return;
                 QNode tn = t.next;
-                // 不一致，说明有其他线程改变了tail节点，重新开始
+                // 不一致,说明有其他线程改变了tail节点,重新开始
                 if (t != tail)
                     continue;
-                // tn != null 推进tail节点，重新开始
+                // tn != null 推进tail节点,重新开始
                 if (tn != null) {
                     advanceTail(t, tn);
                     continue;
@@ -966,7 +968,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
     // 模式为数据（公平isData = true,非公平mode= DATA）
     public void put(E e) throws InterruptedException {
         if (e == null) throw new NullPointerException();
-        if (transferer.transfer(e, false, 0) == null) {
+        if (transferer.transfer(e, false, 0) == null) {//timed false 一直阻塞
             Thread.interrupted();
             throw new InterruptedException();
         }
@@ -1015,7 +1017,8 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
     // take操作
     // 模式为请求（公平isData = false,非公平mode = REQUEST）
     public E take() throws InterruptedException {
-        E e = transferer.transfer(null, false, 0);
+        //null 是消费
+        E e = transferer.transfer(null, false, 0);//timed false 一直阻塞
         if (e != null)
             return e;
         Thread.interrupted();

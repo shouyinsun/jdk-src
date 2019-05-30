@@ -962,8 +962,8 @@ public abstract class AbstractQueuedSynchronizer
                 if (nanosTimeout <= 0L)//超时
                     return false;
                 if (shouldParkAfterFailedAcquire(p, node) &&
-                        //spinForTimeoutThreshold  1000 纳秒，也就是 1 毫秒
-                        //如果不到 1 毫秒了 那就不要选择 parkNanos 了，自旋的性能反而更好
+                        //spinForTimeoutThreshold  1000 纳秒,也就是 1 毫秒
+                        //如果不到 1 毫秒了 那就不要选择 parkNanos 了,自旋的性能反而更好
                     nanosTimeout > spinForTimeoutThreshold)
                     LockSupport.parkNanos(this, nanosTimeout);
                 if (Thread.interrupted())
@@ -2093,8 +2093,8 @@ public abstract class AbstractQueuedSynchronizer
             // 释放锁 返回值是释放锁之前的 state 值
             int savedState = fullyRelease(node);
             int interruptMode = 0;
-            // 这里退出循环有两种情况，之后再仔细分析
-            // 1. isOnSyncQueue(node) 返回 true，即当前 node 已经转移到阻塞队列了
+            // 这里退出循环有两种情况,之后再仔细分析
+            // 1. isOnSyncQueue(node) 返回 true,即当前 node 已经转移到阻塞队列了
             // 2. checkInterruptWhileWaiting(node) != 0 会到 break,然后退出循环 代表的是线程中断
             while (!isOnSyncQueue(node)) {
                 // 线程挂起

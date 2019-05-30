@@ -180,7 +180,7 @@ import java.util.Spliterator;
  * mark <= position <= limit <= capacity
  *
  *
- * capacity：Buffer的容量，表示可以容纳的元素数量
+ * capacity：Buffer的容量,表示可以容纳的元素数量
 
  limit：表示第一个不可以被读取或者写入的元素的位置
 

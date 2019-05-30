@@ -739,8 +739,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                             /****
                              * (e.hash & oldCap) == 0 如果是true,hash值与capacity的1同位的是0,
                              * 表明(e.hash & (newCap - 1))还会和e.hash & (oldCap - 1)一样
-                             * 因为oldCap和newCap是2的次幂，
-                             * 并且newCap是oldCap的两倍，就相当于oldCap的唯一一个二进制的1向高位移动了一位
+                             * 因为oldCap和newCap是2的次幂,
+                             * 并且newCap是oldCap的两倍,就相当于oldCap的唯一一个二进制的1向高位移动了一位
                              */
                             if ((e.hash & oldCap) == 0) {
                                 if (loTail == null)
@@ -1946,7 +1946,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                     K k = x.key;
                     int h = x.hash;
                     Class<?> kc = null;
-                    //遍历root，把节点x插入到红黑树中，执行先插入，然后进行红黑树修正
+                    //遍历root,把节点x插入到红黑树中,执行先插入,然后进行红黑树修正
                     for (TreeNode<K,V> p = root;;) {
                         int dir, ph;
                         K pk = p.key;
@@ -1957,7 +1957,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         else if ((kc == null &&
                                   (kc = comparableClassFor(k)) == null) ||
                                  (dir = compareComparables(kc, k, pk)) == 0)
-                            dir = tieBreakOrder(k, pk);//比较k和pk的值，用于判断是遍历左子树还是右子树
+                            dir = tieBreakOrder(k, pk);//比较k和pk的值,用于判断是遍历左子树还是右子树
 
                         TreeNode<K,V> xp = p;
                         //插入之后仍然是二叉查找树,先插入再修正

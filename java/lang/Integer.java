@@ -1403,7 +1403,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     is equal to zero.
      * @since 1.5
      */
-    public static int numberOfLeadingZeros(int i) {//在指定 int 值的二进制补码表示形式中最高位（最左边）的 1 位之前，返回零位的数量
+    public static int numberOfLeadingZeros(int i) {//在指定 int 值的二进制补码表示形式中最高位（最左边）的 1 位之前,返回零位的数量
         // HD, Figure 5-6
         if (i == 0)
             return 32;
