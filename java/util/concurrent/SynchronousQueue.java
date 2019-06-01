@@ -385,7 +385,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                     } else if (casHead(h, s = snode(s, e, h, mode))) {//非公平
                         // 生成一个SNode节点,并尝试替换掉头节点head (head -> s)
 
-                        // 自旋,等待线程匹配
+                        // 自旋,等待线程匹配,返回s.match节点m
                         SNode m = awaitFulfill(s, timed, nanos);
 
                         // 返回的m == s 表示该节点被取消了或者超时、中断了
@@ -397,11 +397,14 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                             casHead(h, s.next);     // help s's fulfiller
                         return (E) ((mode == REQUEST) ? m.item : s.item);
                     }
+                ////head节点还没有被匹配,尝试匹配 try to fulfill
                 } else if (!isFulfilling(h.mode)) { // try to fulfill
                     if (h.isCancelled())            // already cancelled
                         casHead(h, h.next);         // pop and retry
-                    else if (casHead(h, s=snode(s, e, h, FULFILLING|mode))) {
+                    //构建新节点,放到栈顶
+                    else if (casHead(h, s=snode(s, e, h, FULFILLING|mode))) {//s.next == h
                         for (;;) { // loop until matched or waiters disappear
+                            //cas成功后s的match节点就是s.next,即m
                             SNode m = s.next;       // m is s's match
                             if (m == null) {        // all waiters are gone
                                 casHead(s, null);   // pop fulfill node
@@ -409,13 +412,17 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                                 break;              // restart main loop
                             }
                             SNode mn = m.next;
+                            //尝试匹配,唤醒m节点的线程
                             if (m.tryMatch(s)) {
+                                ////弹出匹配成功的两个节点,替换head
                                 casHead(s, mn);     // pop both s and m
                                 return (E) ((mode == REQUEST) ? m.item : s.item);
                             } else                  // lost match
+                            ////匹配失败,删除m节点,重新循环
                                 s.casNext(m, mn);   // help unlink
                         }
                     }
+                //头节点正在匹配
                 } else {                            // help a fulfiller
                     SNode m = h.next;               // m is h's match
                     if (m == null)                  // waiter is gone
@@ -462,15 +469,18 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
              * and don't wait at all, so are trapped in transfer
              * method rather than calling awaitFulfill.
              */
+            //deadline 时间
             final long deadline = timed ? System.nanoTime() + nanos : 0L;
             Thread w = Thread.currentThread();
+            //自旋次数
             int spins = (shouldSpin(s) ?
                          (timed ? maxTimedSpins : maxUntimedSpins) : 0);
             for (;;) {
                 if (w.isInterrupted())
                     s.tryCancel();
+                //获取给定节点s的match节点
                 SNode m = s.match;
-                if (m != null)
+                if (m != null)//已经匹配到,返回匹配节点
                     return m;
                 if (timed) {
                     nanos = deadline - System.nanoTime();
@@ -482,6 +492,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                 if (spins > 0)
                     spins = shouldSpin(s) ? (spins-1) : 0;
                 else if (s.waiter == null)
+                    //设置给定节点s的waiter为当前线程
                     s.waiter = w; // establish waiter so can park next iter
                 else if (!timed)
                     LockSupport.park(this);
@@ -759,6 +770,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                     }
 
                     // isOffList：用于判断节点是否已经从队列中离开了
+                    // s节点尚未出列
                     if (!s.isOffList()) {           // not already unlinked
                         // 尝试将S节点设置为head,移出t
                         advanceHead(t, s);          // unlink if head
@@ -768,8 +780,8 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                     }
                     return (x != null) ? (E)x : e;
 
-                } else {// 这里是从head.next开始,因为TransferQueue总是会存在一个dummy node节点                        // complementary-mode
-                    // 节点
+                } else {//当前操作模式与尾节点（tail）不同
+                    // 说明可以进行匹配,则从队列头节点head开始向后查找
                     QNode m = h.next;               // node to fulfill
                     // 不一致读,重新开始
                     // 有其他线程更改了线程结构
@@ -790,7 +802,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                         advanceHead(h, m);          // dequeue and retry
                         continue;
                     }
-                    // 成功匹配了 m设置为头结点h出列R向前推进
+                    // 成功匹配了 m设置为头结点 h出列向前推进
                     advanceHead(h, m);              // successfully fulfilled
                     // 唤醒m上的等待线程
                     LockSupport.unpark(m.waiter);
