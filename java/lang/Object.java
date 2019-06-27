@@ -213,6 +213,10 @@ public class Object {
      *               be cloned.
      * @see java.lang.Cloneable
      */
+    //本地方法
+    //默认浅拷贝,需要实现 Cloneable 接口  super.clone()
+    // 引用类型是引用,值类型是值的复制,String是字符常量
+    // 深度拷贝需要自己实现clone方法,或者通过序列化实现
     protected native Object clone() throws CloneNotSupportedException;
 
     /**
