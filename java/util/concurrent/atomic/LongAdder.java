@@ -83,11 +83,16 @@ public class LongAdder extends Striped64 implements Serializable {
      */
     public void add(long x) {
         Cell[] as; long b, v; int m; Cell a;
+        //cell为空,直接cas base
         if ((as = cells) != null || !casBase(b = base, b + x)) {
             boolean uncontended = true;
+            //这里cells不为空 或者 base 的cas 失败
+            //满足 (as !=null && (m = as.length )>=1 && (a = as[getProbe() & m]) != null && (uncontended = a.cas(v = a.value, v + x)))
+            // 不进入for循环累加操作
             if (as == null || (m = as.length - 1) < 0 ||
                 (a = as[getProbe() & m]) == null ||
                 !(uncontended = a.cas(v = a.value, v + x)))
+                //long 累加
                 longAccumulate(x, null, uncontended);
         }
     }
@@ -115,6 +120,7 @@ public class LongAdder extends Striped64 implements Serializable {
      *
      * @return the sum
      */
+    //统计不是绝对准确,统计操作时设置的值可能不会被统计
     public long sum() {
         Cell[] as = cells; Cell a;
         long sum = base;

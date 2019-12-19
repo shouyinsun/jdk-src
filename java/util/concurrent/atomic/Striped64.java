@@ -49,7 +49,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * 64bit  long 跟 double
  *
  * Striped64的设计思路是在竞争激烈的时候尽量分散竞争,
- * 在实现上,Striped64维护了一个base Count和一个Cell数组,计数线程会首先试图更新base变量,
+ * 在实现上,Striped64维护了一个base 计数和一个Cell数组,计数线程会首先试图更新base变量,
  * 如果成功则退出计数,否则会认为当前竞争是很激烈的,那么就会通过Cell数组来分散计数,
  * Striped64根据线程来计算哈希,然后将不同的线程分散到不同的Cell数组的index上,
  * 然后这个线程的计数内容就会保存在该Cell的位置上面,基于这种设计,
@@ -169,6 +169,7 @@ abstract class Striped64 extends Number {
     /**
      * Spinlock (locked via CAS) used when resizing and/or creating Cells.
      */
+    //volatile属性 锁作用
     transient volatile int cellsBusy;
 
     /**
@@ -224,10 +225,11 @@ abstract class Striped64 extends Number {
      * avoids the need for an extra field or function in LongAdder).
      * @param wasUncontended false if CAS failed before call
      */
+    //每个线程的随机数作为hash,确定所在数组下标
     final void longAccumulate(long x, LongBinaryOperator fn,
                               boolean wasUncontended) {
         int h;
-        if ((h = getProbe()) == 0) {
+        if ((h = getProbe()) == 0) {//线程的随机数
             ThreadLocalRandom.current(); // force initialization
             h = getProbe();
             wasUncontended = true;
@@ -235,8 +237,8 @@ abstract class Striped64 extends Number {
         boolean collide = false;                // True if last slot nonempty
         for (;;) {
             Cell[] as; Cell a; int n; long v;
-            if ((as = cells) != null && (n = as.length) > 0) {
-                if ((a = as[(n - 1) & h]) == null) {
+            if ((as = cells) != null && (n = as.length) > 0) {//cell 数组
+                if ((a = as[(n - 1) & h]) == null) {//所在数组为null,初始化
                     if (cellsBusy == 0) {       // Try to attach new Cell
                         Cell r = new Cell(x);   // Optimistically create
                         if (cellsBusy == 0 && casCellsBusy()) {
@@ -261,18 +263,20 @@ abstract class Striped64 extends Number {
                 }
                 else if (!wasUncontended)       // CAS already known to fail
                     wasUncontended = true;      // Continue after rehash
+                //所在数组不为空,累加
                 else if (a.cas(v = a.value, ((fn == null) ? v + x :
                                              fn.applyAsLong(v, x))))
                     break;
+                //数组个数大于NCPU 或 数组已更新
                 else if (n >= NCPU || cells != as)
                     collide = false;            // At max size or stale
                 else if (!collide)
                     collide = true;
-                else if (cellsBusy == 0 && casCellsBusy()) {
+                else if (cellsBusy == 0 && casCellsBusy()) {//cas加操作失败,数组个数没有超过NCPU,resize 两倍大小
                     try {
                         if (cells == as) {      // Expand table unless stale
-                            Cell[] rs = new Cell[n << 1];
-                            for (int i = 0; i < n; ++i)
+                            Cell[] rs = new Cell[n << 1];//2倍
+                            for (int i = 0; i < n; ++i)//数组里存放的只是计数,没有必要resize线程所在的下标一致
                                 rs[i] = as[i];
                             cells = rs;
                         }
@@ -284,11 +288,14 @@ abstract class Striped64 extends Number {
                 }
                 h = advanceProbe(h);
             }
+            //cell数组为空并且获得锁
             else if (cellsBusy == 0 && cells == as && casCellsBusy()) {
+                // 初始化一个大小为2的数组
                 boolean init = false;
                 try {                           // Initialize table
                     if (cells == as) {
                         Cell[] rs = new Cell[2];
+                        //cell数组 赋值
                         rs[h & 1] = new Cell(x);
                         cells = rs;
                         init = true;
@@ -299,6 +306,7 @@ abstract class Striped64 extends Number {
                 if (init)
                     break;
             }
+            //直接操作base
             else if (casBase(v = base, ((fn == null) ? v + x :
                                         fn.applyAsLong(v, x))))
                 break;                          // Fall back on using base
@@ -416,6 +424,7 @@ abstract class Striped64 extends Number {
             CELLSBUSY = UNSAFE.objectFieldOffset
                 (sk.getDeclaredField("cellsBusy"));
             Class<?> tk = Thread.class;
+            //thread 线程 threadLocalRandomProbe 属性偏移量
             PROBE = UNSAFE.objectFieldOffset
                 (tk.getDeclaredField("threadLocalRandomProbe"));
         } catch (Exception e) {
