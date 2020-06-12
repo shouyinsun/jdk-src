@@ -86,7 +86,7 @@ import java.util.function.Consumer;
  * PriorityBlockingQueue 线程安全
  * 数组,最小的是queue[0],无界的queue,会自动扩展
  *
- * 堆排序
+ * 堆
  * 二叉树
  *
  * 父节点的一定小于子节点,兄弟节点大小不确定
@@ -371,7 +371,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         if (i == 0)
             queue[0] = e;
         else
-            siftUp(i, e);
+            siftUp(i, e);//从下到上,调整
         return true;
     }
 
@@ -624,7 +624,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         E x = (E) queue[s];
         //最后一个置为null
         queue[s] = null;
-        if (s != 0)//最小的移到queue[0],原来的queue[s]放到合适的位置
+        if (s != 0)//相当于第一个跟最后一个交换,然后从上到下调整
             siftDown(0, x);
         return result;
     }
@@ -673,7 +673,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param k the position to fill
      * @param x the item to insert
      */
-    private void siftUp(int k, E x) {//最小的放最前面
+    private void siftUp(int k, E x) {//从下往上调整
         if (comparator != null)
             siftUpUsingComparator(k, x);
         else
@@ -697,7 +697,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     @SuppressWarnings("unchecked")
     private void siftUpUsingComparator(int k, E x) {
         while (k > 0) {//跟parent比较
-            int parent = (k - 1) >>> 1;//index从0开始    parent:i  children: 2i+1 与  2(i+1)
+            int parent = (k - 1) >>> 1;//从下往上,调整
             Object e = queue[parent];
             if (comparator.compare(x, (E) e) >= 0)
                 break;
@@ -715,7 +715,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param k the position to fill
      * @param x the item to insert
      */
-    private void siftDown(int k, E x) {//降档,最小的放最前面
+    private void siftDown(int k, E x) {//从上到下调整
         if (comparator != null)
             siftDownUsingComparator(k, x);
         else
@@ -744,7 +744,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     @SuppressWarnings("unchecked")
     private void siftDownUsingComparator(int k, E x) {
         int half = size >>> 1;
-        while (k < half) {
+        while (k < half) {//只到最后一个非叶子节点
             //index从0开始    parent:i  children: 2i+1 与  2(i+1)
             int child = (k << 1) + 1;
             Object c = queue[child];
@@ -755,7 +755,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
                 c = queue[child = right];
             if (comparator.compare(x, (E) c) <= 0)
                 break;
-            //x 大于子节点中较小的,交换位置
+            //子节点赋给父节点,再从子节点开始向下调整
             queue[k] = c;
             k = child;
         }
