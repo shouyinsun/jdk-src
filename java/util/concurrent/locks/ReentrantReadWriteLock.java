@@ -265,7 +265,7 @@ public class ReentrantReadWriteLock
          * and the upper the shared (reader) hold count.
          */
 
-        //volatile 的stete 高16位为读锁,低16位为写锁
+        //volatile 的state 高16位为读锁,低16位为写锁
         static final int SHARED_SHIFT   = 16;
         static final int SHARED_UNIT    = (1 << SHARED_SHIFT);
         static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
