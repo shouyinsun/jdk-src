@@ -690,6 +690,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      *
      * @return the table
      */
+    //resize 使用尾插法,不会形成环,死循环
+    // 1.7扩容时使用头插法,可能死循环和数据丢失
     final Node<K,V>[] resize() {//重新计算capacity跟threshold,元素rehash
         Node<K,V>[] oldTab = table;
         int oldCap = (oldTab == null) ? 0 : oldTab.length;
