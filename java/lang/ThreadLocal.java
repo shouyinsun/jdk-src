@@ -472,10 +472,13 @@ public class ThreadLocal<T> {
 
             Entry[] tab = table;
             int len = tab.length;
+            //使用的hash值是threadLocalHashCode
             int i = key.threadLocalHashCode & (len-1);
 
             for (Entry e = tab[i];
                  e != null;
+                 //解决hash冲突使用开放寻址法
+                // 冲突就顺延下一位,没有使用链表法
                  e = tab[i = nextIndex(i, len)]) {
                 ThreadLocal<?> k = e.get();
 
